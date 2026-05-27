@@ -10,8 +10,6 @@ const TryCatch = (handler: RequestHandler): RequestHandler => {
       res.status(500).json({
         message: "Internal server error",
       });
-
-      next(err);
     }
   };
 };

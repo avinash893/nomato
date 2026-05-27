@@ -2,7 +2,8 @@ import User from "../models/User.js";
 import jwt from "jsonwebtoken";
 import TryCatch from "../middlewares/trycatch.js";
 import { AuthenticatedRequest } from "../middlewares/isAuth.js";
-import { oauth2client, Oauth2Client } from "../config/googleConfig.js";
+import { oauth2client } from "../config/googleConfig.js";
+import axios from "axios";
 
 export const loginUser = TryCatch(async (req, res) => {
   const { code } = req.body;
@@ -12,9 +13,11 @@ export const loginUser = TryCatch(async (req, res) => {
 
   const googleResponse = await oauth2client.getToken(code);
 
-  oauth2client.setCredentials(googleResponse.tokens);
+  const userResponse = await axios.get(
+    `https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=${googleResponse.tokens.access_token}`,
+  );
 
-  const { email, name, picture } = req.body;
+  const { email, name, picture } = userResponse.data;
 
   let user = await User.findOne({ email });
 
