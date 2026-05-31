@@ -2,14 +2,16 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { authService } from "../main";
+import { authService } from "../config";
 import { useGoogleLogin } from "@react-oauth/google";
 import { FcGoogle } from "react-icons/fc";
+import { useAppData } from "../context/AppContext";
 
 const Login = () => {
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
+  const { setIsAuth, setUser } = useAppData();
 
   const responseGoogle = async (authResult: { code: string }) => {
     setLoading(true);
@@ -18,6 +20,8 @@ const Login = () => {
         code: authResult["code"],
       });
       localStorage.setItem("token", result.data.token);
+      setIsAuth(true);
+      setUser(result.data.user);
       toast.success(result.data.message);
       setLoading(false);
       navigate("/");
