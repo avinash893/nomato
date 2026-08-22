@@ -8,6 +8,7 @@ import {
   fetchSingleOrder,
   getCurrentOrderForRider,
   getMyOrders,
+  getPendingUnassignedOrders,
   handlePaymentSuccess,
   updateOrderStatus,
   updateOrderStatusRider,
@@ -19,6 +20,7 @@ router.get("/myorder", isAuth, getMyOrders);
 router.post("/new", isAuth, createOrder);
 router.post("/payment-success", handlePaymentSuccess);
 router.get("/payment/:id", fetchOrderForPayment);
+router.get("/pending/unassigned", getPendingUnassignedOrders);
 router.get(
   "/restaurant/:restaurantId",
   isAuth,

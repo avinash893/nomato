@@ -3,7 +3,7 @@ import getBuffer from "../config/datauri";
 import { AuthenticatedRequest } from "../middlewares/isAuth";
 import TryCatch from "../middlewares/trycatch";
 import { Rider } from "../model/Rider";
-import { Response } from "express";
+import { Request, Response } from "express";
 
 export const addRiderProfile = TryCatch(
   async (req: AuthenticatedRequest, res: Response) => {
@@ -118,6 +118,81 @@ export const toggleRiderAvailablity = TryCatch(
       message: isAvailble ? "You are now ONLINE and ready for orders" : "You are now OFFLINE",
       rider,
     });
+  }
+);
+
+export const broadcastOrderToRiders = TryCatch(
+  async (req: Request, res: Response) => {
+    const { orderId, restaurantId } = req.body;
+    if (!orderId) {
+      return res.status(400).json({ message: "orderId is required" });
+    }
+
+    const availableRiders = await Rider.find({ isAvailble: true });
+    console.log(`📢 Broadcasting order ${orderId} to ${availableRiders.length} online riders`);
+
+    const realtimeUrl = process.env.REALTIME_SERVICE || "http://127.0.0.1:5005";
+    const internalKey = process.env.INTERNAL_SERVICE_KEY || "internal_secret_key";
+
+    // 1. Broadcast to "riders" room
+    try {
+      await axios.post(
+        `${realtimeUrl}/api/v1/internal/emit`,
+        {
+          event: "order:available",
+          room: "riders",
+          payload: { orderId, restaurantId },
+        },
+        {
+          headers: { "x-internal-key": internalKey },
+        }
+      );
+    } catch (err) {
+      console.warn("Failed to broadcast to riders room:", err);
+    }
+
+    // 2. Direct broadcast to each online rider's user room
+    for (const rider of availableRiders) {
+      try {
+        await axios.post(
+          `${realtimeUrl}/api/v1/internal/emit`,
+          {
+            event: "order:available",
+            room: `user:${rider.userId}`,
+            payload: { orderId, restaurantId },
+          },
+          {
+            headers: { "x-internal-key": internalKey },
+          }
+        );
+      } catch {
+        // Non-blocking
+      }
+    }
+
+    return res.json({
+      success: true,
+      notifiedCount: availableRiders.length,
+    });
+  }
+);
+
+export const getAvailablePendingOrders = TryCatch(
+  async (req: Request, res: Response) => {
+    const restaurantServiceUrl = process.env.RESTAURANT_SERVICE || "http://127.0.0.1:5001";
+    try {
+      const { data } = await axios.get(
+        `${restaurantServiceUrl}/api/order/pending/unassigned`,
+        {
+          headers: {
+            "x-internal-key": process.env.INTERNAL_SERVICE_KEY || "internal_secret_key",
+          },
+        }
+      );
+      return res.json({ orders: data.orders || [] });
+    } catch {
+      return res.json({ orders: [] });
+    }
   }
 );
 

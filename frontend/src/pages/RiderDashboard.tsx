@@ -85,6 +85,30 @@ const RiderDashboard = () => {
     }
   };
 
+  const fetchPendingOrders = async () => {
+    if (!profile?.isAvailble || currentOrder) return;
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      const { data } = await axios.get(
+        `${riderService}/api/rider/order/pending`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const orderIds = (data.orders || []).map((o: any) => o._id);
+      if (orderIds.length > 0) {
+        setIncomingOrders((prev) => Array.from(new Set([...prev, ...orderIds])));
+      }
+    } catch {
+      // Non-blocking
+    }
+  };
+
   useEffect(() => {
     if (user?.role === "rider") {
       fetchProfile();
@@ -94,8 +118,11 @@ const RiderDashboard = () => {
     }
   }, [user]);
 
+  // Join riders socket room and listen to available orders
   useEffect(() => {
     if (!socket) return;
+
+    socket.emit("join", "riders");
 
     const onOrderAvailable = ({ orderId }: { orderId: string }) => {
       if (!orderId) return;
@@ -105,7 +132,7 @@ const RiderDashboard = () => {
 
       setTimeout(() => {
         setIncomingOrders((prev) => prev.filter((id) => id !== orderId));
-      }, 15000);
+      }, 20000);
     };
 
     socket.on("order:available", onOrderAvailable);
@@ -114,6 +141,15 @@ const RiderDashboard = () => {
       socket.off("order:available", onOrderAvailable);
     };
   }, [socket]);
+
+  // Polling fallback to guarantee pending orders are never missed
+  useEffect(() => {
+    if (!profile?.isAvailble || currentOrder) return;
+
+    fetchPendingOrders();
+    const interval = setInterval(fetchPendingOrders, 3000);
+    return () => clearInterval(interval);
+  }, [profile?.isAvailble, currentOrder]);
 
   const toggleAvailability = async () => {
     if (!navigator.geolocation) {
@@ -154,8 +190,36 @@ const RiderDashboard = () => {
         }
       },
       () => {
-        toast.error("Could not obtain GPS location. Please allow location access.");
-        setToggling(false);
+        // Fallback with default coordinates if browser denies permission
+        const token = localStorage.getItem("token");
+        axios
+          .patch(
+            `${riderService}/api/rider/toggle`,
+            {
+              isAvailble: !profile?.isAvailble,
+              latitude: 28.6139,
+              longitude: 77.209,
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          )
+          .then(() => {
+            toast.success(
+              profile?.isAvailble
+                ? "You are now OFFLINE"
+                : "You are now ONLINE and ready for orders! 🛵"
+            );
+            fetchProfile();
+          })
+          .catch((err) => {
+            toast.error(err.response?.data?.message || "Status toggle failed");
+          })
+          .finally(() => {
+            setToggling(false);
+          });
       }
     );
   };
@@ -175,42 +239,43 @@ const RiderDashboard = () => {
 
     setSubmitting(true);
 
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        try {
-          const formData = new FormData();
-          formData.append("phoneNumber", phoneNumber);
-          formData.append("aadharNumber", aadharNumber);
-          formData.append("drivingLicenseNumber", drivingLicenseNumber);
-          formData.append("latitude", pos.coords.latitude.toString());
-          formData.append("longitude", pos.coords.longitude.toString());
-          formData.append("file", image);
+    const submitFormData = (lat: number, lng: number) => {
+      const formData = new FormData();
+      formData.append("phoneNumber", phoneNumber);
+      formData.append("aadharNumber", aadharNumber);
+      formData.append("drivingLicenseNumber", drivingLicenseNumber);
+      formData.append("latitude", lat.toString());
+      formData.append("longitude", lng.toString());
+      formData.append("file", image);
 
-          const token = localStorage.getItem("token");
-          const { data } = await axios.post(
-            `${riderService}/api/rider/new`,
-            formData,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "multipart/form-data",
-              },
-            }
-          );
-
+      const token = localStorage.getItem("token");
+      axios
+        .post(`${riderService}/api/rider/new`, formData, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        })
+        .then(({ data }) => {
           toast.success(data.message || "Rider profile registered!");
           fetchProfile();
-        } catch (error: any) {
+        })
+        .catch((error: any) => {
           toast.error(error.response?.data?.message || "Registration failed");
-        } finally {
+        })
+        .finally(() => {
           setSubmitting(false);
-        }
-      },
-      () => {
-        toast.error("Please allow location access to register as a delivery partner");
-        setSubmitting(false);
-      }
-    );
+        });
+    };
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => submitFormData(pos.coords.latitude, pos.coords.longitude),
+        () => submitFormData(28.6139, 77.209)
+      );
+    } else {
+      submitFormData(28.6139, 77.209);
+    }
   };
 
   if (loading) {
@@ -361,16 +426,18 @@ const RiderDashboard = () => {
       </div>
 
       {/* Incoming Orders Popups */}
-      {profile.isAvailble && incomingOrders.length > 0 && (
+      {profile.isAvailble && incomingOrders.length > 0 && !currentOrder && (
         <div className="space-y-3">
-          <h3 className="text-xs font-black uppercase tracking-wider text-gray-400">
-            Incoming Deliveries
+          <h3 className="text-xs font-black uppercase tracking-wider text-red-600 flex items-center gap-1.5 animate-pulse">
+            <span className="w-2 h-2 rounded-full bg-red-600" />
+            <span>Available Delivery Requests ({incomingOrders.length})</span>
           </h3>
           {incomingOrders.map((orderId) => (
             <RiderOrderRequest
               key={orderId}
               orderId={orderId}
               onAccepted={() => {
+                setIncomingOrders((prev) => prev.filter((id) => id !== orderId));
                 fetchProfile();
                 fetchCurrentOrder();
               }}

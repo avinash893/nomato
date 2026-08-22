@@ -17,7 +17,6 @@ export const initSocket = (server: http.Server) => {
       const token = socket.handshake.auth?.token;
 
       if (!token) {
-        // Allow unauthenticated connection in local dev if needed
         return next();
       }
 
@@ -46,7 +45,11 @@ export const initSocket = (server: http.Server) => {
         socket.join(`restaurant:${user.restaurantId}`);
       }
 
-      console.log(`Socket user joined rooms for: ${userId}`);
+      if (user.role === "rider") {
+        socket.join("riders");
+      }
+
+      console.log(`Socket user joined rooms for: ${userId} (role: ${user.role})`);
     }
 
     socket.on("join", (room: string) => {
