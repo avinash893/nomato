@@ -5,11 +5,12 @@ import {
   useState,
   useContext,
   useEffect,
+  useCallback,
   type ReactNode,
 } from "react";
 import axios from "axios";
-import { authService, utilsService } from "../config";
-import type { AppContextType, LocationData, User } from "../types";
+import { authService, utilsService, restaurantService } from "../config";
+import type { AppContextType, ICartItem, LocationData, User } from "../types";
 
 function sanitizeEnglish(text: string): string {
   if (!text) return "";
@@ -37,40 +38,76 @@ export const AppProvider = ({ children }: AppProviderProps) => {
   const [loadingLocation, setLoadingLocation] = useState(false);
   const [city, setCity] = useState("Fetching location...");
 
-  useEffect(() => {
-    async function fetchUser() {
-      try {
-        const urlParams = new URLSearchParams(window.location.search);
-        const queryToken = urlParams.get("token");
-        if (queryToken) {
-          localStorage.setItem("token", queryToken);
-        }
+  const [cart, setCart] = useState<ICartItem[] | null>([]);
+  const [subTotal, setSubTotal] = useState(0);
+  const [quauntity, setQuauntity] = useState(0);
 
-        const token = localStorage.getItem("token");
-
-        // Exit early if the user is not logged in
-        if (!token) {
-          setLoading(false);
-          return;
-        }
-
-        const { data } = await axios.get(`${authService}/api/auth/me`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        setUser(data);
-        setIsAuth(true);
-      } catch (err) {
-        console.error("Auth Error:", err);
-        localStorage.removeItem("token"); // Clean up invalid/expired tokens
-      } finally {
-        setLoading(false);
+  const fetchUser = useCallback(async () => {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const queryToken = urlParams.get("token");
+      if (queryToken) {
+        localStorage.setItem("token", queryToken);
       }
+
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+
+      const { data } = await axios.get(`${authService}/api/auth/me`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setUser(data);
+      setIsAuth(true);
+    } catch (err) {
+      console.error("Auth Error:", err);
+      localStorage.removeItem("token");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const fetchCart = useCallback(async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setCart([]);
+      setSubTotal(0);
+      setQuauntity(0);
+      return;
     }
 
-    fetchUser();
+    try {
+      const { data } = await axios.get(`${restaurantService}/api/cart/all`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      setCart(data.cart || []);
+      setSubTotal(data.subtotal || 0);
+      setQuauntity(data.cartLength || (data.cart ? data.cart.length : 0));
+    } catch (error) {
+      // Cart might be empty or service not ready
+      setCart([]);
+      setSubTotal(0);
+      setQuauntity(0);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchUser();
+  }, [fetchUser]);
+
+  useEffect(() => {
+    if (user && user.role === "customer") {
+      fetchCart();
+    }
+  }, [user, fetchCart]);
 
   const fetchLocation = async (): Promise<LocationData | null> => {
     if (!navigator.geolocation) {
@@ -92,7 +129,10 @@ export const AppProvider = ({ children }: AppProviderProps) => {
 
             if (data && data.formattedAddress) {
               const cleanAddress = sanitizeEnglish(data.formattedAddress);
-              const cleanCity = sanitizeEnglish(data.city) || cleanAddress.split(",")[0] || "Detected Location";
+              const cleanCity =
+                sanitizeEnglish(data.city) ||
+                cleanAddress.split(",")[0] ||
+                "Detected Location";
 
               setCity(cleanCity);
 
@@ -111,10 +151,10 @@ export const AppProvider = ({ children }: AppProviderProps) => {
               return;
             }
           } catch (err) {
-            console.warn("Backend geocoding request failed, attempting direct fallback:", err);
+            console.warn("Backend geocoding failed, trying BigDataCloud:", err);
           }
 
-          // 2. Direct browser fallback using BigDataCloud
+          // 2. Direct browser fallback
           try {
             const { data: bdcData } = await axios.get(
               `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
@@ -134,17 +174,20 @@ export const AppProvider = ({ children }: AppProviderProps) => {
               sanitizeEnglish(bdcData.countryName) || "India",
             ].filter(Boolean);
 
-            // Deduplicate parts
             const uniqueParts = Array.from(new Set(parts));
             const formatted = uniqueParts.join(", ");
-            const shortCity = sanitizeEnglish(bdcData.city || bdcData.locality) || "Detected Location";
+            const shortCity =
+              sanitizeEnglish(bdcData.city || bdcData.locality) ||
+              "Detected Location";
 
             setCity(shortCity);
 
             const locData: LocationData = {
               latitude,
               longitude,
-              formattedAddress: formatted || `Location at ${latitude.toFixed(5)}, ${longitude.toFixed(5)}`,
+              formattedAddress:
+                formatted ||
+                `Location at ${latitude.toFixed(5)}, ${longitude.toFixed(5)}`,
               pincode: postcode,
               city: shortCity,
               state: sanitizeEnglish(bdcData.principalSubdivision),
@@ -202,14 +245,16 @@ export const AppProvider = ({ children }: AppProviderProps) => {
         city,
         setCity,
         fetchLocation,
+        cart,
+        fetchCart,
+        subTotal,
+        quauntity,
       }}
     >
       {children}
     </AppContext.Provider>
   );
 };
-
-
 
 export const useAppData = (): AppContextType => {
   const context = useContext(AppContext);
