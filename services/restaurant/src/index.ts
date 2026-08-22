@@ -5,6 +5,7 @@ import restaurantRoutes from "./routes/restaurant";
 import menuItemRoutes from "./routes/menuitem";
 import addressRoutes from "./routes/address";
 import cartRoutes from "./routes/cart";
+import orderRoutes from "./routes/order";
 import cors from "cors";
 
 dotenv.config();
@@ -19,6 +20,7 @@ app.use("/api/restaurant", restaurantRoutes);
 app.use("/api/item", menuItemRoutes);
 app.use("/api/address", addressRoutes);
 app.use("/api/cart", cartRoutes);
+app.use("/api/order", orderRoutes);
 
 const PORT = Number(process.env.PORT) || 5001;
 

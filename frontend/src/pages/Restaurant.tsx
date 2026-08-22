@@ -6,6 +6,7 @@ import AddRestaurant from "../components/AddRestaurant";
 import RestaurantProfile from "../components/RestaurantProfile";
 import MenuItems from "../components/MenuItems";
 import AddMenuItem from "../components/AddMenuItem";
+import RestaurantOrders from "../components/RestaurantOrders";
 import { BiFoodMenu, BiPlusCircle, BiShoppingBag, BiStats } from "react-icons/bi";
 
 type SellerTab = "menu" | "add-item" | "orders" | "sales";
@@ -169,15 +170,7 @@ const Restaurant = () => {
           )}
 
           {tab === "orders" && (
-            <div className="text-center py-16">
-              <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-3">
-                <BiShoppingBag size={28} />
-              </div>
-              <h3 className="text-base font-bold text-gray-800">Incoming Orders Dashboard</h3>
-              <p className="text-xs text-gray-500 max-w-md mx-auto mt-1">
-                Live customer orders will appear here automatically as soon as customers checkout.
-              </p>
-            </div>
+            <RestaurantOrders restaurantId={restaurant._id} />
           )}
 
           {tab === "sales" && (

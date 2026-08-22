@@ -13,6 +13,9 @@ import RestaurantPage from "./pages/RestaurantPage";
 import AddressPage from "./pages/Address";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
+import Orders from "./pages/Orders";
+import PaymentSuccess from "./pages/PaymentSuccess";
+import OrderSuccess from "./pages/OrderSuccess";
 import AddRestaurant from "./components/AddRestaurant";
 
 const App = () => {
@@ -59,6 +62,9 @@ const App = () => {
           <Route path="/restaurant/:id" element={<RestaurantPage />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/checkout" element={<Checkout />} />
+          <Route path="/orders" element={<Orders />} />
+          <Route path="/paymentsuccess/:paymentId" element={<PaymentSuccess />} />
+          <Route path="/ordersuccess" element={<OrderSuccess />} />
           <Route path="/restaurant" element={<Restaurant />} />
           <Route path="/add-restaurant" element={<AddRestaurant />} />
         </Route>
