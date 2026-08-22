@@ -85,6 +85,13 @@ const Navbar = () => {
                   </Link>
 
                   <Link
+                    to="/admin"
+                    className="flex items-center gap-1.5 text-xs font-semibold text-gray-700 hover:text-red-600 transition"
+                  >
+                    <span className="hidden sm:inline">Admin</span>
+                  </Link>
+
+                  <Link
                     to="/cart"
                     className="relative flex items-center justify-center p-2 rounded-xl text-gray-700 hover:text-red-600 hover:bg-red-50/50 transition"
                     title="Cart"

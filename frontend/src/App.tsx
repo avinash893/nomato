@@ -19,6 +19,7 @@ import PaymentSuccess from "./pages/PaymentSuccess";
 import OrderSuccess from "./pages/OrderSuccess";
 import AddRestaurant from "./components/AddRestaurant";
 import RiderDashboard from "./pages/RiderDashboard";
+import Admin from "./pages/Admin";
 
 const App = () => {
   const { user, loading } = useAppData();
@@ -42,6 +43,7 @@ const App = () => {
           <Route path="/select-role" element={<SelectRole />} />
           <Route path="/account" element={<Account />} />
           <Route path="/add-restaurant" element={<AddRestaurant />} />
+          <Route path="/admin" element={<Admin />} />
         </Routes>
         <Toaster position="top-center" />
       </Router>
@@ -57,6 +59,7 @@ const App = () => {
           <Route path="/rider" element={<RiderDashboard />} />
           <Route path="/select-role" element={<SelectRole />} />
           <Route path="/account" element={<Account />} />
+          <Route path="/admin" element={<Admin />} />
         </Routes>
         <Toaster position="top-center" />
       </Router>
@@ -86,6 +89,7 @@ const App = () => {
           <Route path="/restaurant" element={<Restaurant />} />
           <Route path="/add-restaurant" element={<AddRestaurant />} />
           <Route path="/rider" element={<RiderDashboard />} />
+          <Route path="/admin" element={<Admin />} />
         </Route>
       </Routes>
       <Toaster position="top-center" />
