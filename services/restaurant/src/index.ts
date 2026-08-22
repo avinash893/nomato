@@ -4,6 +4,7 @@ import connectDB from "./config/db";
 import restaurantRoutes from "./routes/restaurant";
 import menuItemRoutes from "./routes/menuitem";
 import addressRoutes from "./routes/address";
+import cartRoutes from "./routes/cart";
 import cors from "cors";
 
 dotenv.config();
@@ -17,6 +18,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api/restaurant", restaurantRoutes);
 app.use("/api/item", menuItemRoutes);
 app.use("/api/address", addressRoutes);
+app.use("/api/cart", cartRoutes);
 
 const PORT = Number(process.env.PORT) || 5001;
 

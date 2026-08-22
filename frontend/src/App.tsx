@@ -11,6 +11,8 @@ import { useAppData } from "./context/AppContext";
 import Restaurant from "./pages/Restaurant";
 import RestaurantPage from "./pages/RestaurantPage";
 import AddressPage from "./pages/Address";
+import Cart from "./pages/Cart";
+import Checkout from "./pages/Checkout";
 import AddRestaurant from "./components/AddRestaurant";
 
 const App = () => {
@@ -55,6 +57,8 @@ const App = () => {
           <Route path="/account" element={<Account />} />
           <Route path="/address" element={<AddressPage />} />
           <Route path="/restaurant/:id" element={<RestaurantPage />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/checkout" element={<Checkout />} />
           <Route path="/restaurant" element={<Restaurant />} />
           <Route path="/add-restaurant" element={<AddRestaurant />} />
         </Route>
