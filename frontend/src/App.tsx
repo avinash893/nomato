@@ -9,11 +9,21 @@ import Navbar from "./components/navbar";
 import Account from "./pages/Account";
 import { useAppData } from "./context/AppContext";
 import Restaurant from "./pages/Restaurant";
-
+import RestaurantPage from "./pages/RestaurantPage";
+import AddressPage from "./pages/Address";
 import AddRestaurant from "./components/AddRestaurant";
 
 const App = () => {
-  const { user } = useAppData();
+  const { user, loading } = useAppData();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-3 bg-white">
+        <div className="w-12 h-12 border-4 border-red-500 border-t-transparent rounded-full animate-spin" />
+        <span className="text-sm font-semibold text-gray-500">Loading Nomato...</span>
+      </div>
+    );
+  }
 
   if (user && user.role === "seller") {
     return (
@@ -21,11 +31,12 @@ const App = () => {
         <Navbar />
         <Routes>
           <Route path="/" element={<Restaurant />} />
+          <Route path="/restaurant" element={<Restaurant />} />
           <Route path="/select-role" element={<SelectRole />} />
           <Route path="/account" element={<Account />} />
           <Route path="/add-restaurant" element={<AddRestaurant />} />
         </Routes>
-        <Toaster />
+        <Toaster position="top-center" />
       </Router>
     );
   }
@@ -42,11 +53,13 @@ const App = () => {
           <Route index element={<Home />} />
           <Route path="/select-role" element={<SelectRole />} />
           <Route path="/account" element={<Account />} />
+          <Route path="/address" element={<AddressPage />} />
+          <Route path="/restaurant/:id" element={<RestaurantPage />} />
           <Route path="/restaurant" element={<Restaurant />} />
           <Route path="/add-restaurant" element={<AddRestaurant />} />
         </Route>
       </Routes>
-      <Toaster />
+      <Toaster position="top-center" />
     </Router>
   );
 };
