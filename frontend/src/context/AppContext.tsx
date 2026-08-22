@@ -8,8 +8,19 @@ import {
   type ReactNode,
 } from "react";
 import axios from "axios";
-import { authService } from "../config";
+import { authService, utilsService } from "../config";
 import type { AppContextType, LocationData, User } from "../types";
+
+function sanitizeEnglish(text: string): string {
+  if (!text) return "";
+  return text
+    .replace(/[\u0900-\u097F]/gu, "")
+    .replace(/\s*,\s*,\s*/g, ", ")
+    .replace(/^\s*,\s*/, "")
+    .replace(/\s*,\s*$/, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
 
 export const AppContext = createContext<AppContextType | undefined>(undefined);
 
@@ -29,6 +40,12 @@ export const AppProvider = ({ children }: AppProviderProps) => {
   useEffect(() => {
     async function fetchUser() {
       try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const queryToken = urlParams.get("token");
+        if (queryToken) {
+          localStorage.setItem("token", queryToken);
+        }
+
         const token = localStorage.getItem("token");
 
         // Exit early if the user is not logged in
@@ -55,38 +72,118 @@ export const AppProvider = ({ children }: AppProviderProps) => {
     fetchUser();
   }, []);
 
-  useEffect(() => {
+  const fetchLocation = async (): Promise<LocationData | null> => {
     if (!navigator.geolocation) {
       setCity("Location not supported");
-      alert("Geolocation is not supported by your browser");
-      return;
+      return null;
     }
 
     setLoadingLocation(true);
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const { latitude, longitude } = position.coords;
-        try {
-          const { data } = await axios.get(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
-          );
-          const currentCity = data.address.city || data.address.town || data.address.village || data.address.county || "Unknown Location";
-          setCity(currentCity);
-          setLocation({ latitude, longitude, formattedAddress: data.display_name });
-        } catch (err) {
-          console.error("Error fetching city data:", err);
-          setCity("Unknown Location");
-          setLocation({ latitude, longitude, formattedAddress: "Unknown" });
-        } finally {
+
+    return new Promise((resolve) => {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+          try {
+            // 1. Try our backend reverse geocode service
+            const { data } = await axios.get(
+              `${utilsService}/api/geocode/reverse?lat=${latitude}&lon=${longitude}`
+            );
+
+            if (data && data.formattedAddress) {
+              const cleanAddress = sanitizeEnglish(data.formattedAddress);
+              const cleanCity = sanitizeEnglish(data.city) || cleanAddress.split(",")[0] || "Detected Location";
+
+              setCity(cleanCity);
+
+              const locData: LocationData = {
+                latitude,
+                longitude,
+                formattedAddress: cleanAddress,
+                pincode: data.pincode || "",
+                city: cleanCity,
+                state: sanitizeEnglish(data.state),
+              };
+
+              setLocation(locData);
+              setLoadingLocation(false);
+              resolve(locData);
+              return;
+            }
+          } catch (err) {
+            console.warn("Backend geocoding request failed, attempting direct fallback:", err);
+          }
+
+          // 2. Direct browser fallback using BigDataCloud
+          try {
+            const { data: bdcData } = await axios.get(
+              `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
+            );
+
+            const postcode = bdcData.postcode || "";
+            const adminParts = (bdcData.localityInfo?.administrative || [])
+              .map((item: any) => sanitizeEnglish(item.name))
+              .reverse()
+              .filter(Boolean);
+
+            const parts = [
+              sanitizeEnglish(bdcData.locality),
+              sanitizeEnglish(bdcData.city),
+              ...adminParts,
+              postcode,
+              sanitizeEnglish(bdcData.countryName) || "India",
+            ].filter(Boolean);
+
+            // Deduplicate parts
+            const uniqueParts = Array.from(new Set(parts));
+            const formatted = uniqueParts.join(", ");
+            const shortCity = sanitizeEnglish(bdcData.city || bdcData.locality) || "Detected Location";
+
+            setCity(shortCity);
+
+            const locData: LocationData = {
+              latitude,
+              longitude,
+              formattedAddress: formatted || `Location at ${latitude.toFixed(5)}, ${longitude.toFixed(5)}`,
+              pincode: postcode,
+              city: shortCity,
+              state: sanitizeEnglish(bdcData.principalSubdivision),
+            };
+
+            setLocation(locData);
+            setLoadingLocation(false);
+            resolve(locData);
+          } catch (fallbackErr) {
+            console.error("All reverse geocoding methods failed:", fallbackErr);
+            const fallbackStr = `Lat: ${latitude.toFixed(5)}, Lon: ${longitude.toFixed(5)}`;
+            setCity("GPS Detected");
+            const locData: LocationData = {
+              latitude,
+              longitude,
+              formattedAddress: fallbackStr,
+            };
+            setLocation(locData);
+            setLoadingLocation(false);
+            resolve(locData);
+          }
+        },
+        (error) => {
+          console.error("Geolocation error:", error);
+          setCity("Location access denied");
           setLoadingLocation(false);
+          resolve(null);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 20000,
+          maximumAge: 0,
         }
-      },
-      (error) => {
-        console.error("Error getting location:", error);
-        setCity("Location access denied");
-        setLoadingLocation(false);
-      }
-    );
+      );
+    });
+  };
+
+  useEffect(() => {
+    fetchLocation();
   }, []);
 
   return (
@@ -104,6 +201,7 @@ export const AppProvider = ({ children }: AppProviderProps) => {
         setLoadingLocation,
         city,
         setCity,
+        fetchLocation,
       }}
     >
       {children}

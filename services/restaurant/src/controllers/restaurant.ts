@@ -1,8 +1,9 @@
-import { FormatterOptions } from "./../../../utils/node_modules/concurrently/dist/lib/date-format.d";
 import { AuthenticatedRequest } from "../middlewares/isAuth";
 import TryCatch from "../middlewares/trycatch";
-import { Request, Response } from "express";
+import { Response } from "express";
 import Restaurant from "../models/restaurant";
+import getBuffer from "../config/datauri";
+import axios from "axios";
 
 export const addRestaurant = TryCatch(
   async (req: AuthenticatedRequest, res: Response) => {
@@ -14,7 +15,7 @@ export const addRestaurant = TryCatch(
     }
 
     const existingRestaurant = await Restaurant.findOne({
-      ownerId: user?._id,
+      owner: user._id,
     });
 
     if (existingRestaurant) {
@@ -24,11 +25,79 @@ export const addRestaurant = TryCatch(
       return;
     }
 
-    const { name, description, address, FormattedAddress, phone } = req.body;
+    const { name, description, location, phone, latitude, longitude, formattedAddress } = req.body;
 
-    if (!name || !description || !address || !phone) {
+    if (!name || !description || !location || !phone) {
       res.status(400).json({ message: "All fields are required" });
       return;
     }
+
+    const file = req.file;
+
+    if (!file) {
+      res.status(400).json({ message: "Image is required" });
+      return;
+    }
+
+    const fileBuffer = getBuffer(file);
+
+    if (!fileBuffer?.content) {
+      res.status(400).json({ message: "Invalid image file" });
+      return;
+    }
+
+    const { data: uploadResult } = await axios.post(
+      `${process.env.UTILS_SERVICE}/api/upload`,
+      {
+        buffer: fileBuffer.content,
+      },
+    );
+
+    const lat = latitude ? Number(latitude) : 0;
+    const lon = longitude ? Number(longitude) : 0;
+
+    const restaurant = await Restaurant.create({
+      name,
+      description,
+      location,
+      phone,
+      image: uploadResult.url,
+      owner: user._id,
+      autolocation: {
+        type: "Point",
+        coordinates: [lon, lat],
+        formattedAddress: formattedAddress || location,
+      },
+    });
+
+    return res.status(201).json({
+      message: "Restaurant created successfully",
+      restaurant,
+    });
   },
 );
+
+export const fetchMyRestaurant = TryCatch(
+  async (req: AuthenticatedRequest, res: Response) => {
+    if (!req.user) {
+      return res.status(401).json({
+        message: "Unauthorized login first",
+      });
+    }
+
+    const restaurant = await Restaurant.findOne({
+      owner: req.user._id,
+    });
+
+    if (!restaurant) {
+      return res.status(404).json({
+        message: "Restaurant not found",
+      });
+    }
+
+    return res.status(200).json({ restaurant });
+  },
+);
+
+
+

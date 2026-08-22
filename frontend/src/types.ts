@@ -12,6 +12,9 @@ export interface LocationData {
   latitude: number;
   longitude: number;
   formattedAddress: string;
+  pincode?: string;
+  city?: string;
+  state?: string;
 }
 
 export interface AppContextType {
@@ -27,4 +30,24 @@ export interface AppContextType {
   setLoadingLocation: React.Dispatch<React.SetStateAction<boolean>>;
   city: string;
   setCity: React.Dispatch<React.SetStateAction<string>>;
+  fetchLocation: () => Promise<LocationData | null>;
+}
+
+export interface IRestaurant  {
+  _id: string;
+  name: string;
+  description: string;
+  image: string;
+  location: string;
+  phone: string;
+  isVerified: boolean;
+  isOpen: boolean;
+
+  owner: string;
+  autolocation: {
+    type: "Point";
+    coordinates: [number, number];
+    formattedAddress: string;
+    createdAt: Date;
+  };
 }

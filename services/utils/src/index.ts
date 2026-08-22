@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import cloudinary from "cloudinary";
 import cors from "cors";
 import uploadRouter from "./routes/cloudinarry";
+import geocodeRouter from "./routes/geocode";
 
 dotenv.config();
 
@@ -28,8 +29,11 @@ cloudinary.v2.config({
   api_secret: CLOUD_SECRET_KEY,
 });
 app.use("/api", uploadRouter);
+app.use("/api/geocode", geocodeRouter);
 
 const PORT = process.env.PORT || 5002;
-app.listen(Number(PORT));
+app.listen(Number(PORT), () => {
+  console.log(`Utils service is running on port ${PORT}`);
+});
 
 export default app;

@@ -7,6 +7,7 @@ export interface IUser {
   email: string;
   image: string;
   role: string;
+  restaurantId: string;
 }
 
 export interface AuthenticatedRequest extends Request {
@@ -45,4 +46,19 @@ export const isAuth = async (
     console.log("JWT error:", err);
     res.status(401).json({ message: "Unauthorized  jwt error" });
   }
+};
+
+export const isSeller = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  const user = req.user;
+  if (!user || user.role !== "seller") {
+    res
+      .status(403)
+      .json({ message: "Forbidden, only sellers can access this resource" });
+    return;
+  }
+  next();
 };

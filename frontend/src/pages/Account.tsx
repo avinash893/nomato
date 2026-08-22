@@ -41,30 +41,42 @@ const Account = () => {
         {/* Actions */}
         <div className="p-5 space-y-3">
           <button
+            onClick={() => navigate("/restaurant")}
+            className="w-full flex items-center justify-center gap-2 rounded-lg px-4 py-3 bg-red-50 text-red-600 hover:bg-red-500 hover:text-white transition font-medium"
+          >
+            <BiPackage className="h-5 w-5" />
+            <span>Restaurant / Add Restaurant</span>
+          </button>
+
+          <button
+            onClick={() => navigate("/select-role")}
+            className="w-full flex items-center justify-center gap-2 rounded-lg px-4 py-3 bg-gray-50 text-gray-700 hover:bg-gray-200 transition"
+          >
+            <BiPackage className="h-5 w-5" />
+            <span>Switch Role (Current: {user?.role || "customer"})</span>
+          </button>
+
+          <button
             onClick={() => navigate("/orders")}
-            className="w-full flex items-center justify-center gap-2 rounded-lg px-4 py-3 hover:bg-red-600 transition"
+            className="w-full flex items-center justify-center gap-2 rounded-lg px-4 py-3 bg-gray-50 text-gray-700 hover:bg-gray-200 transition"
           >
             <BiPackage className="h-5 w-5" />
             <span>Your Orders</span>
           </button>
-        </div>
 
-        <div className="p-5 space-y-3">
           <button
-            onClick={() => navigate("/Adresses")}
-            className="w-full flex items-center justify-center gap-2 rounded-lg px-4 py-3 hover:bg-red-600 transition"
+            onClick={() => navigate("/addresses")}
+            className="w-full flex items-center justify-center gap-2 rounded-lg px-4 py-3 bg-gray-50 text-gray-700 hover:bg-gray-200 transition"
           >
             <BiMapPin className="h-5 w-5" />
             <span>Your Addresses</span>
           </button>
-        </div>
 
-        <div className="p-5 space-y-3">
           <button
             onClick={logoutHandler}
-            className="w-full flex items-center justify-center gap-2 rounded-lg px-4 py-3 hover:bg-red-600 transition"
+            className="w-full flex items-center justify-center gap-2 rounded-lg px-4 py-3 bg-red-500 text-white hover:bg-red-600 transition font-medium mt-4"
           >
-            <BiLogOut className="h-5 w-5 " />
+            <BiLogOut className="h-5 w-5" />
             <span>Logout</span>
           </button>
         </div>

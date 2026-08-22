@@ -1,11 +1,11 @@
-﻿import { Link, useLocation, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { useAppData } from "../context/AppContext";
 import { useEffect, useState } from "react";
 import { CgShoppingCart } from "react-icons/cg";
 import { BiMapPin, BiSearch } from "react-icons/bi";
 
 const Navbar = () => {
-  const { isAuth, city } = useAppData();
+  const { isAuth, city, location } = useAppData();
   const currentLocation = useLocation();
   const isHomePage = currentLocation.pathname === "/";
 
@@ -37,14 +37,17 @@ const Navbar = () => {
           </Link>
 
           {isHomePage && (
-            <div className="hidden md:flex items-center bg-gray-100 rounded-xl px-4 py-2 w-[450px]">
-              <div className="flex items-center gap-2 pr-3 border-r border-gray-300">
-                <BiMapPin className="text-red-500 text-xl" />
+            <div className="hidden md:flex items-center bg-gray-100 rounded-xl px-4 py-2 w-[580px]">
+              <div
+                className="flex items-center gap-2 pr-3 border-r border-gray-300 max-w-[260px]"
+                title={location?.formattedAddress || city}
+              >
+                <BiMapPin className="text-red-500 text-xl flex-shrink-0" />
                 <span className="text-sm text-gray-600 whitespace-nowrap">
                   Deliver to
                 </span>
-                <span className="text-sm font-medium text-gray-800 whitespace-nowrap">
-                  {city}
+                <span className="text-sm font-medium text-gray-800 truncate">
+                  {location?.formattedAddress || city}
                 </span>
               </div>
 

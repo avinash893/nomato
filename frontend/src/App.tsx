@@ -7,26 +7,47 @@ import PublicRoute from "./components/publicRoute";
 import SelectRole from "./pages/SelectRole";
 import Navbar from "./components/navbar";
 import Account from "./pages/Account";
+import { useAppData } from "./context/AppContext";
+import Restaurant from "./pages/Restaurant";
+
+import AddRestaurant from "./components/AddRestaurant";
 
 const App = () => {
-  return (
-    <>
+  const { user } = useAppData();
+
+  if (user && user.role === "seller") {
+    return (
       <Router>
         <Navbar />
         <Routes>
-          <Route element={<PublicRoute />}>
-            <Route path="/login" element={<Login />} />
-          </Route>
-
-          <Route element={<ProtectedRoute />}>
-            <Route index element={<Home />} />
-            <Route path="select-role" element={<SelectRole />} />
-            <Route path="account" element={<Account />} />
-          </Route>
+          <Route path="/" element={<Restaurant />} />
+          <Route path="/select-role" element={<SelectRole />} />
+          <Route path="/account" element={<Account />} />
+          <Route path="/add-restaurant" element={<AddRestaurant />} />
         </Routes>
         <Toaster />
       </Router>
-    </>
+    );
+  }
+
+  return (
+    <Router>
+      <Navbar />
+      <Routes>
+        <Route element={<PublicRoute />}>
+          <Route path="/login" element={<Login />} />
+        </Route>
+
+        <Route element={<ProtectedRoute />}>
+          <Route index element={<Home />} />
+          <Route path="/select-role" element={<SelectRole />} />
+          <Route path="/account" element={<Account />} />
+          <Route path="/restaurant" element={<Restaurant />} />
+          <Route path="/add-restaurant" element={<AddRestaurant />} />
+        </Route>
+      </Routes>
+      <Toaster />
+    </Router>
   );
 };
 
