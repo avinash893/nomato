@@ -14,9 +14,11 @@ import AddressPage from "./pages/Address";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import Orders from "./pages/Orders";
+import OrderPage from "./pages/OrderPage";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import OrderSuccess from "./pages/OrderSuccess";
 import AddRestaurant from "./components/AddRestaurant";
+import RiderDashboard from "./pages/RiderDashboard";
 
 const App = () => {
   const { user, loading } = useAppData();
@@ -46,6 +48,21 @@ const App = () => {
     );
   }
 
+  if (user && user.role === "rider") {
+    return (
+      <Router>
+        <Navbar />
+        <Routes>
+          <Route path="/" element={<RiderDashboard />} />
+          <Route path="/rider" element={<RiderDashboard />} />
+          <Route path="/select-role" element={<SelectRole />} />
+          <Route path="/account" element={<Account />} />
+        </Routes>
+        <Toaster position="top-center" />
+      </Router>
+    );
+  }
+
   return (
     <Router>
       <Navbar />
@@ -63,10 +80,12 @@ const App = () => {
           <Route path="/cart" element={<Cart />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/orders" element={<Orders />} />
+          <Route path="/order/:id" element={<OrderPage />} />
           <Route path="/paymentsuccess/:paymentId" element={<PaymentSuccess />} />
           <Route path="/ordersuccess" element={<OrderSuccess />} />
           <Route path="/restaurant" element={<Restaurant />} />
           <Route path="/add-restaurant" element={<AddRestaurant />} />
+          <Route path="/rider" element={<RiderDashboard />} />
         </Route>
       </Routes>
       <Toaster position="top-center" />
