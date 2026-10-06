@@ -20,6 +20,9 @@ import OrderSuccess from "./pages/OrderSuccess";
 import AddRestaurant from "./components/AddRestaurant";
 import RiderDashboard from "./pages/RiderDashboard";
 import Admin from "./pages/Admin";
+import ChatBot from "./components/ChatBot";
+import Support from "./pages/Support";
+import Footer from "./components/Footer";
 
 const App = () => {
   const { user, loading } = useAppData();
@@ -36,16 +39,24 @@ const App = () => {
   if (user && user.role === "seller") {
     return (
       <Router>
-        <Navbar />
-        <Routes>
-          <Route path="/" element={<Restaurant />} />
-          <Route path="/restaurant" element={<Restaurant />} />
-          <Route path="/select-role" element={<SelectRole />} />
-          <Route path="/account" element={<Account />} />
-          <Route path="/add-restaurant" element={<AddRestaurant />} />
-          <Route path="/admin" element={<Admin />} />
-        </Routes>
+        <div className="min-h-screen flex flex-col justify-between">
+          <div>
+            <Navbar />
+            <Routes>
+              <Route path="/" element={<Restaurant />} />
+              <Route path="/restaurant" element={<Restaurant />} />
+              <Route path="/select-role" element={<SelectRole />} />
+              <Route path="/account" element={<Account />} />
+              <Route path="/add-restaurant" element={<AddRestaurant />} />
+              <Route path="/admin" element={<Admin />} />
+              <Route path="/support" element={<Support />} />
+              <Route path="/contact" element={<Support />} />
+            </Routes>
+          </div>
+          <Footer />
+        </div>
         <Toaster position="top-center" />
+        <ChatBot />
       </Router>
     );
   }
@@ -53,46 +64,63 @@ const App = () => {
   if (user && user.role === "rider") {
     return (
       <Router>
-        <Navbar />
-        <Routes>
-          <Route path="/" element={<RiderDashboard />} />
-          <Route path="/rider" element={<RiderDashboard />} />
-          <Route path="/select-role" element={<SelectRole />} />
-          <Route path="/account" element={<Account />} />
-          <Route path="/admin" element={<Admin />} />
-        </Routes>
+        <div className="min-h-screen flex flex-col justify-between">
+          <div>
+            <Navbar />
+            <Routes>
+              <Route path="/" element={<RiderDashboard />} />
+              <Route path="/rider" element={<RiderDashboard />} />
+              <Route path="/select-role" element={<SelectRole />} />
+              <Route path="/account" element={<Account />} />
+              <Route path="/admin" element={<Admin />} />
+              <Route path="/support" element={<Support />} />
+              <Route path="/contact" element={<Support />} />
+            </Routes>
+          </div>
+          <Footer />
+        </div>
         <Toaster position="top-center" />
+        <ChatBot />
       </Router>
     );
   }
 
   return (
     <Router>
-      <Navbar />
-      <Routes>
-        <Route element={<PublicRoute />}>
-          <Route path="/login" element={<Login />} />
-        </Route>
+      <div className="min-h-screen flex flex-col justify-between">
+        <div>
+          <Navbar />
+          <Routes>
+            <Route path="/support" element={<Support />} />
+            <Route path="/contact" element={<Support />} />
 
-        <Route element={<ProtectedRoute />}>
-          <Route index element={<Home />} />
-          <Route path="/select-role" element={<SelectRole />} />
-          <Route path="/account" element={<Account />} />
-          <Route path="/address" element={<AddressPage />} />
-          <Route path="/restaurant/:id" element={<RestaurantPage />} />
-          <Route path="/cart" element={<Cart />} />
-          <Route path="/checkout" element={<Checkout />} />
-          <Route path="/orders" element={<Orders />} />
-          <Route path="/order/:id" element={<OrderPage />} />
-          <Route path="/paymentsuccess/:paymentId" element={<PaymentSuccess />} />
-          <Route path="/ordersuccess" element={<OrderSuccess />} />
-          <Route path="/restaurant" element={<Restaurant />} />
-          <Route path="/add-restaurant" element={<AddRestaurant />} />
-          <Route path="/rider" element={<RiderDashboard />} />
-          <Route path="/admin" element={<Admin />} />
-        </Route>
-      </Routes>
+            <Route element={<PublicRoute />}>
+              <Route path="/login" element={<Login />} />
+            </Route>
+
+            <Route element={<ProtectedRoute />}>
+              <Route index element={<Home />} />
+              <Route path="/select-role" element={<SelectRole />} />
+              <Route path="/account" element={<Account />} />
+              <Route path="/address" element={<AddressPage />} />
+              <Route path="/restaurant/:id" element={<RestaurantPage />} />
+              <Route path="/cart" element={<Cart />} />
+              <Route path="/checkout" element={<Checkout />} />
+              <Route path="/orders" element={<Orders />} />
+              <Route path="/order/:id" element={<OrderPage />} />
+              <Route path="/paymentsuccess/:paymentId" element={<PaymentSuccess />} />
+              <Route path="/ordersuccess" element={<OrderSuccess />} />
+              <Route path="/restaurant" element={<Restaurant />} />
+              <Route path="/add-restaurant" element={<AddRestaurant />} />
+              <Route path="/rider" element={<RiderDashboard />} />
+              <Route path="/admin" element={<Admin />} />
+            </Route>
+          </Routes>
+        </div>
+        <Footer />
+      </div>
       <Toaster position="top-center" />
+      <ChatBot />
     </Router>
   );
 };

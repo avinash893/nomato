@@ -5,6 +5,7 @@ import cors from "cors";
 import uploadRouter from "./routes/cloudinarry";
 import geocodeRouter from "./routes/geocode";
 import paymentRouter from "./routes/payment";
+import chatRouter from "./routes/chat";
 
 dotenv.config();
 
@@ -31,6 +32,7 @@ if (CLOUD_NAME && CLOUD_API_KEY && CLOUD_SECRET_KEY) {
 app.use("/api", uploadRouter);
 app.use("/api/geocode", geocodeRouter);
 app.use("/api/payment", paymentRouter);
+app.use("/api/chat", chatRouter);
 
 const PORT = Number(process.env.PORT) || 5002;
 app.listen(PORT, "0.0.0.0", () => {

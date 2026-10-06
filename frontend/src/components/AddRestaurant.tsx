@@ -4,6 +4,7 @@ import axios from "axios";
 import { restaurantService } from "../config";
 import toast from "react-hot-toast";
 
+
 interface AddRestaurantProps {
   fetchMyRestaurant?: () => void;
 }
