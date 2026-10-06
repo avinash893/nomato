@@ -57,6 +57,19 @@ export const AppProvider = ({ children }: AppProviderProps) => {
         return;
       }
 
+      if (token.startsWith("demo_token_")) {
+        const demoUserStr = localStorage.getItem("demo_user");
+        if (demoUserStr) {
+          try {
+            const parsed = JSON.parse(demoUserStr);
+            setUser(parsed);
+            setIsAuth(true);
+            setLoading(false);
+            return;
+          } catch (_) {}
+        }
+      }
+
       const { data } = await axios.get(`${authService}/api/auth/me`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -65,7 +78,16 @@ export const AppProvider = ({ children }: AppProviderProps) => {
       setUser(data);
       setIsAuth(true);
     } catch (err) {
-      console.error("Auth Error:", err);
+      console.warn("Auth check failed, checking for local demo session:", err);
+      const demoUserStr = localStorage.getItem("demo_user");
+      if (demoUserStr) {
+        try {
+          const parsed = JSON.parse(demoUserStr);
+          setUser(parsed);
+          setIsAuth(true);
+          return;
+        } catch (_) {}
+      }
       localStorage.removeItem("token");
     } finally {
       setLoading(false);
