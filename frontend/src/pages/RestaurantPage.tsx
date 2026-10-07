@@ -7,6 +7,8 @@ import RestaurantProfile from "../components/RestaurantProfile";
 import MenuItems from "../components/MenuItems";
 import { BiArrowBack } from "react-icons/bi";
 
+import { SHOWCASE_RESTAURANTS } from "../data/showcaseData";
+
 const RestaurantPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -16,25 +18,35 @@ const RestaurantPage = () => {
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState("All");
 
-  const fetchRestaurant = async () => {
-    try {
-      const { data } = await axios.get(
-        `${restaurantService}/api/restaurant/${id}`
-      );
-      setRestaurant(data || null);
-    } catch (error) {
-      console.error("Error fetching restaurant:", error);
-    }
-  };
+  const fetchRestaurantAndMenu = async () => {
+    if (!id) return;
 
-  const fetchMenuItems = async () => {
     try {
-      const { data } = await axios.get(
-        `${restaurantService}/api/item/all/${id}`
-      );
-      setMenuItems(data || []);
-    } catch (error) {
-      console.error("Error fetching menu items:", error);
+      setLoading(true);
+      const [resData, itemData] = await Promise.all([
+        axios.get(`${restaurantService}/api/restaurant/${id}`).then((r) => r.data).catch(() => null),
+        axios.get(`${restaurantService}/api/item/all/${id}`).then((r) => r.data).catch(() => null),
+      ]);
+
+      if (resData) {
+        setRestaurant(resData);
+        setMenuItems(itemData || []);
+        return;
+      }
+
+      // Showcase fallback
+      const showcase = SHOWCASE_RESTAURANTS[id] || SHOWCASE_RESTAURANTS["res_royal_tandoor"];
+      if (showcase) {
+        setRestaurant(showcase.restaurant);
+        setMenuItems(showcase.items);
+      }
+    } catch (err) {
+      console.warn("Backend restaurant load failed, checking showcase catalog:", err);
+      const showcase = SHOWCASE_RESTAURANTS[id] || SHOWCASE_RESTAURANTS["res_royal_tandoor"];
+      if (showcase) {
+        setRestaurant(showcase.restaurant);
+        setMenuItems(showcase.items);
+      }
     } finally {
       setLoading(false);
     }
@@ -42,8 +54,7 @@ const RestaurantPage = () => {
 
   useEffect(() => {
     if (id) {
-      fetchRestaurant();
-      fetchMenuItems();
+      fetchRestaurantAndMenu();
     }
   }, [id]);
 

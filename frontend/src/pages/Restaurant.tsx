@@ -9,6 +9,8 @@ import AddMenuItem from "../components/AddMenuItem";
 import RestaurantOrders from "../components/RestaurantOrders";
 import { BiFoodMenu, BiPlusCircle, BiShoppingBag, BiStats } from "react-icons/bi";
 
+import { SHOWCASE_RESTAURANTS } from "../data/showcaseData";
+
 type SellerTab = "menu" | "add-item" | "orders" | "sales";
 
 const Restaurant = () => {
@@ -38,8 +40,16 @@ const Restaurant = () => {
       if (data.token) {
         localStorage.setItem("token", data.token);
       }
-    } catch (error) {
-      console.error("Error fetching restaurant:", error);
+    } catch {
+      // Offline / demo seller fallback
+      const demoSeller = localStorage.getItem("demo_seller_restaurant");
+      if (demoSeller) {
+        setRestaurant(JSON.parse(demoSeller));
+      } else {
+        const starter = SHOWCASE_RESTAURANTS["res_royal_tandoor"].restaurant;
+        setRestaurant(starter);
+        localStorage.setItem("demo_seller_restaurant", JSON.stringify(starter));
+      }
     } finally {
       setLoading(false);
     }
@@ -52,8 +62,15 @@ const Restaurant = () => {
         `${restaurantService}/api/item/all/${restaurantId}`
       );
       setMenuItems(data || []);
-    } catch (error) {
-      console.error("Error fetching menu items:", error);
+    } catch {
+      const demoItemsStr = localStorage.getItem(`demo_seller_items_${restaurantId}`);
+      if (demoItemsStr) {
+        setMenuItems(JSON.parse(demoItemsStr));
+      } else if (SHOWCASE_RESTAURANTS[restaurantId]) {
+        setMenuItems(SHOWCASE_RESTAURANTS[restaurantId].items);
+      } else {
+        setMenuItems(SHOWCASE_RESTAURANTS["res_royal_tandoor"].items);
+      }
     } finally {
       setLoadingMenu(false);
     }

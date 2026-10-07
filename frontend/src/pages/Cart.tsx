@@ -53,9 +53,18 @@ const Cart = () => {
         }
       );
       await fetchCart();
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to update quantity");
+    } catch {
+      // Local cart fallback
+      const localCartStr = localStorage.getItem("demo_cart");
+      if (localCartStr) {
+        const localCart = JSON.parse(localCartStr);
+        const idx = localCart.findIndex((c: any) => c.itemId?._id === itemId);
+        if (idx > -1) {
+          localCart[idx].quantity += 1;
+          localStorage.setItem("demo_cart", JSON.stringify(localCart));
+          if (fetchCart) await fetchCart();
+        }
+      }
     } finally {
       setLoadingItemId(null);
     }
@@ -74,9 +83,22 @@ const Cart = () => {
         }
       );
       await fetchCart();
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to update quantity");
+    } catch {
+      // Local cart fallback
+      const localCartStr = localStorage.getItem("demo_cart");
+      if (localCartStr) {
+        let localCart = JSON.parse(localCartStr);
+        const idx = localCart.findIndex((c: any) => c.itemId?._id === itemId);
+        if (idx > -1) {
+          if (localCart[idx].quantity > 1) {
+            localCart[idx].quantity -= 1;
+          } else {
+            localCart = localCart.filter((c: any) => c.itemId?._id !== itemId);
+          }
+          localStorage.setItem("demo_cart", JSON.stringify(localCart));
+          if (fetchCart) await fetchCart();
+        }
+      }
     } finally {
       setLoadingItemId(null);
     }
@@ -94,9 +116,10 @@ const Cart = () => {
       });
       await fetchCart();
       toast.success("Cart cleared");
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to clear cart");
+    } catch {
+      localStorage.removeItem("demo_cart");
+      if (fetchCart) await fetchCart();
+      toast.success("Cart cleared");
     } finally {
       setClearingCart(false);
     }

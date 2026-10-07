@@ -69,29 +69,68 @@ const MenuItems: React.FC<MenuItemsProps> = ({ items, onItemDeleted, isSeller })
     try {
       setLoadingItemId(itemId);
       const token = localStorage.getItem("token");
-      if (!token) {
-        toast.error("Please login to add items to your cart");
+      if (token) {
+        const { data } = await axios.post(
+          `${restaurantService}/api/cart/add`,
+          {
+            restaurantId,
+            itemId,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        toast.success(data.message || "Added to cart!");
+        if (fetchCart) fetchCart();
         return;
       }
+    } catch {
+      // Offline / demo cart fallback
+      const targetItem = items.find((i) => i._id === itemId);
+      if (targetItem) {
+        const localCartStr = localStorage.getItem("demo_cart");
+        let localCart = localCartStr ? JSON.parse(localCartStr) : [];
 
-      const { data } = await axios.post(
-        `${restaurantService}/api/cart/add`,
-        {
-          restaurantId,
-          itemId,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+        // If cart has items from a different restaurant, reset cart
+        if (
+          localCart.length > 0 &&
+          localCart[0].restaurantId?._id &&
+          localCart[0].restaurantId._id !== restaurantId
+        ) {
+          localCart = [];
+          toast("Started fresh cart from this restaurant", { icon: "🛒" });
         }
-      );
 
-      toast.success(data.message || "Added to cart!");
-      if (fetchCart) fetchCart();
-    } catch (error: any) {
-      console.error(error);
-      toast.error(error.response?.data?.message || "Failed to add to cart");
+        const existingIdx = localCart.findIndex(
+          (c: any) => c.itemId?._id === itemId
+        );
+        if (existingIdx > -1) {
+          localCart[existingIdx].quantity += 1;
+        } else {
+          localCart.push({
+            _id: `cart_${Date.now()}_${Math.random().toString(36).substring(7)}`,
+            userId: "current_user",
+            restaurantId:
+              typeof targetItem.restaurantId === "object"
+                ? targetItem.restaurantId
+                : {
+                    _id: restaurantId,
+                    name: "Selected Kitchen",
+                    isOpen: true,
+                    autoLocation: { formattedAddress: "Connaught Place, New Delhi" },
+                  },
+            itemId: targetItem,
+            quantity: 1,
+          });
+        }
+
+        localStorage.setItem("demo_cart", JSON.stringify(localCart));
+        toast.success(`Added ${targetItem.name} to cart! 🛒`);
+        if (fetchCart) fetchCart();
+      }
     } finally {
       setLoadingItemId(null);
     }

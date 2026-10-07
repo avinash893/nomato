@@ -97,6 +97,25 @@ export const AppProvider = ({ children }: AppProviderProps) => {
   const fetchCart = useCallback(async () => {
     const token = localStorage.getItem("token");
     if (!token) {
+      const localCartStr = localStorage.getItem("demo_cart");
+      if (localCartStr) {
+        try {
+          const localCart = JSON.parse(localCartStr);
+          setCart(localCart);
+          const sub = localCart.reduce(
+            (acc: number, c: any) =>
+              acc + (c.itemId?.price || 0) * (c.quantity || 1),
+            0
+          );
+          const qty = localCart.reduce(
+            (acc: number, c: any) => acc + (c.quantity || 1),
+            0
+          );
+          setSubTotal(sub);
+          setQuauntity(qty);
+          return;
+        } catch (_) {}
+      }
       setCart([]);
       setSubTotal(0);
       setQuauntity(0);
@@ -113,8 +132,27 @@ export const AppProvider = ({ children }: AppProviderProps) => {
       setCart(data.cart || []);
       setSubTotal(data.subtotal || 0);
       setQuauntity(data.cartLength || (data.cart ? data.cart.length : 0));
-    } catch (error) {
-      // Cart might be empty or service not ready
+    } catch {
+      // Local cart synchronization for demo mode & offline previews
+      const localCartStr = localStorage.getItem("demo_cart");
+      if (localCartStr) {
+        try {
+          const localCart = JSON.parse(localCartStr);
+          setCart(localCart);
+          const sub = localCart.reduce(
+            (acc: number, c: any) =>
+              acc + (c.itemId?.price || 0) * (c.quantity || 1),
+            0
+          );
+          const qty = localCart.reduce(
+            (acc: number, c: any) => acc + (c.quantity || 1),
+            0
+          );
+          setSubTotal(sub);
+          setQuauntity(qty);
+          return;
+        } catch (_) {}
+      }
       setCart([]);
       setSubTotal(0);
       setQuauntity(0);
@@ -233,10 +271,19 @@ export const AppProvider = ({ children }: AppProviderProps) => {
           }
         },
         (error) => {
-          console.error("Geolocation error:", error);
-          setCity("Location access denied");
+          console.warn("Geolocation access not granted, using central city coordinates:", error);
+          const defaultLoc: LocationData = {
+            latitude: 28.6328,
+            longitude: 77.2167,
+            formattedAddress: "Connaught Place, New Delhi",
+            city: "New Delhi",
+            pincode: "110001",
+            state: "Delhi",
+          };
+          setCity("New Delhi");
+          setLocation(defaultLoc);
           setLoadingLocation(false);
-          resolve(null);
+          resolve(defaultLoc);
         },
         {
           enableHighAccuracy: true,

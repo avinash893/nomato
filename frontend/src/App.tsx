@@ -45,8 +45,15 @@ const App = () => {
             <Routes>
               <Route path="/" element={<Restaurant />} />
               <Route path="/restaurant" element={<Restaurant />} />
+              <Route path="/restaurant/:id" element={<RestaurantPage />} />
               <Route path="/select-role" element={<SelectRole />} />
               <Route path="/account" element={<Account />} />
+              <Route path="/address" element={<AddressPage />} />
+              <Route path="/addresses" element={<AddressPage />} />
+              <Route path="/orders" element={<Orders />} />
+              <Route path="/order/:id" element={<OrderPage />} />
+              <Route path="/cart" element={<Cart />} />
+              <Route path="/checkout" element={<Checkout />} />
               <Route path="/add-restaurant" element={<AddRestaurant />} />
               <Route path="/admin" element={<Admin />} />
               <Route path="/support" element={<Support />} />
@@ -70,8 +77,15 @@ const App = () => {
             <Routes>
               <Route path="/" element={<RiderDashboard />} />
               <Route path="/rider" element={<RiderDashboard />} />
+              <Route path="/restaurant/:id" element={<RestaurantPage />} />
               <Route path="/select-role" element={<SelectRole />} />
               <Route path="/account" element={<Account />} />
+              <Route path="/address" element={<AddressPage />} />
+              <Route path="/addresses" element={<AddressPage />} />
+              <Route path="/orders" element={<Orders />} />
+              <Route path="/order/:id" element={<OrderPage />} />
+              <Route path="/cart" element={<Cart />} />
+              <Route path="/checkout" element={<Checkout />} />
               <Route path="/admin" element={<Admin />} />
               <Route path="/support" element={<Support />} />
               <Route path="/contact" element={<Support />} />
@@ -91,6 +105,9 @@ const App = () => {
         <div>
           <Navbar />
           <Routes>
+            <Route index element={<Home />} />
+            <Route path="/restaurant/:id" element={<RestaurantPage />} />
+            <Route path="/cart" element={<Cart />} />
             <Route path="/support" element={<Support />} />
             <Route path="/contact" element={<Support />} />
 
@@ -99,12 +116,10 @@ const App = () => {
             </Route>
 
             <Route element={<ProtectedRoute />}>
-              <Route index element={<Home />} />
               <Route path="/select-role" element={<SelectRole />} />
               <Route path="/account" element={<Account />} />
               <Route path="/address" element={<AddressPage />} />
-              <Route path="/restaurant/:id" element={<RestaurantPage />} />
-              <Route path="/cart" element={<Cart />} />
+              <Route path="/addresses" element={<AddressPage />} />
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/orders" element={<Orders />} />
               <Route path="/order/:id" element={<OrderPage />} />

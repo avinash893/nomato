@@ -71,9 +71,41 @@ const Navbar = () => {
         )}
 
         {/* Right Section: Actions */}
-        <div className="flex items-center gap-4 sm:gap-5">
+        <div className="flex items-center gap-3 sm:gap-5">
+          {/* Universal Cart Button */}
+          <Link
+            to="/cart"
+            className="relative flex items-center justify-center p-2 rounded-xl text-gray-700 hover:text-red-600 hover:bg-red-50/50 transition cursor-pointer"
+            title="Cart"
+          >
+            <CgShoppingCart size={22} />
+            {quauntity > 0 && (
+              <span className="absolute -top-1 -right-1 flex h-4.5 min-w-4.5 px-1 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white shadow-sm animate-pulse">
+                {quauntity}
+              </span>
+            )}
+          </Link>
+
           {isAuth ? (
             <>
+              {user?.role === "seller" && (
+                <Link
+                  to="/restaurant"
+                  className="hidden sm:flex items-center gap-1.5 text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-xl hover:bg-amber-100 transition"
+                >
+                  <span>Kitchen Hub</span>
+                </Link>
+              )}
+
+              {user?.role === "rider" && (
+                <Link
+                  to="/rider"
+                  className="hidden sm:flex items-center gap-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl hover:bg-emerald-100 transition"
+                >
+                  <span>Rider Hub</span>
+                </Link>
+              )}
+
               {user?.role === "customer" && (
                 <>
                   <Link
@@ -89,19 +121,6 @@ const Navbar = () => {
                     className="flex items-center gap-1.5 text-xs font-semibold text-gray-700 hover:text-red-600 transition"
                   >
                     <span className="hidden sm:inline">Admin</span>
-                  </Link>
-
-                  <Link
-                    to="/cart"
-                    className="relative flex items-center justify-center p-2 rounded-xl text-gray-700 hover:text-red-600 hover:bg-red-50/50 transition"
-                    title="Cart"
-                  >
-                    <CgShoppingCart size={22} />
-                    {quauntity > 0 && (
-                      <span className="absolute -top-1 -right-1 flex h-4.5 min-w-4.5 px-1 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white shadow-sm animate-pulse">
-                        {quauntity}
-                      </span>
-                    )}
                   </Link>
                 </>
               )}

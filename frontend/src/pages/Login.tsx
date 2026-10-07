@@ -121,7 +121,7 @@ const Login = () => {
           </button>
 
           {/* Quick Demo Option for testing without Google account */}
-          <div className="text-center pt-2">
+          <div className="pt-2 text-center">
             <button
               type="button"
               onClick={() => {
@@ -138,9 +138,9 @@ const Login = () => {
                 setUser(demoUser);
                 navigate("/select-role");
               }}
-              className="text-xs font-semibold text-gray-400 hover:text-red-600 transition cursor-pointer underline underline-offset-4"
+              className="w-full rounded-2xl bg-gray-50 border border-gray-200 py-3 text-xs font-bold text-gray-600 hover:bg-gray-100 active:scale-[0.99] transition cursor-pointer flex items-center justify-center gap-2"
             >
-              Or explore in Guest Demo Mode →
+              <span>⚡ Explore in 1-Click Guest Mode</span>
             </button>
           </div>
         </div>

@@ -65,8 +65,21 @@ const OrderPage = () => {
       });
 
       setOrder(data);
-    } catch (error) {
-      console.error("Failed to load order:", error);
+    } catch {
+      // Local demo order fallback
+      const localOrdersStr = localStorage.getItem("demo_orders");
+      if (localOrdersStr) {
+        try {
+          const localOrders = JSON.parse(localOrdersStr);
+          const found = localOrders.find((o: any) => o._id === id);
+          if (found) {
+            setOrder(found);
+            const lat = found.address?.latitude || 28.6328;
+            const lng = found.address?.longitude || 77.2167;
+            setRiderLocation([lat + 0.003, lng + 0.004]);
+          }
+        } catch (_) {}
+      }
     } finally {
       setLoading(false);
     }
@@ -74,7 +87,7 @@ const OrderPage = () => {
 
   useEffect(() => {
     fetchOrder();
-    const interval = setInterval(fetchOrder, 6000);
+    const interval = setInterval(fetchOrder, 15000);
     return () => clearInterval(interval);
   }, [id]);
 

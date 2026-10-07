@@ -53,20 +53,37 @@ const Orders = () => {
   const fetchOrders = async () => {
     try {
       const token = localStorage.getItem("token");
-      if (!token) return;
+      if (token) {
+        try {
+          const { data } = await axios.get(
+            `${restaurantService}/api/order/myorder`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
 
-      const { data } = await axios.get(
-        `${restaurantService}/api/order/myorder`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          if (data?.orders && data.orders.length > 0) {
+            setOrders(data.orders);
+            return;
+          }
+        } catch {
+          // Fall back to local demo orders
         }
-      );
+      }
 
-      setOrders(data.orders || []);
-    } catch (error) {
-      console.error("Failed to load orders:", error);
+      // Local demo orders fallback
+      const localOrdersStr = localStorage.getItem("demo_orders");
+      if (localOrdersStr) {
+        try {
+          setOrders(JSON.parse(localOrdersStr));
+        } catch (_) {
+          setOrders([]);
+        }
+      } else {
+        setOrders([]);
+      }
     } finally {
       setLoading(false);
     }
