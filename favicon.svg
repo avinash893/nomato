@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="tomatoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF385C"/>
+      <stop offset="100%" stop-color="#E23744"/>
+    </linearGradient>
+    <linearGradient id="leafGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4ADE80"/>
+      <stop offset="100%" stop-color="#16A34A"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000" flood-opacity="0.2"/>
+    </filter>
+  </defs>
+  <!-- Main Tomato Circle -->
+  <circle cx="32" cy="35" r="24" fill="url(#tomatoGrad)" filter="url(#shadow)"/>
+  <ellipse cx="24" cy="27" rx="7" ry="3.5" fill="#ffffff" opacity="0.3" transform="rotate(-30 24 27)"/>
+  
+  <!-- Stem -->
+  <path d="M32 19 C33 11, 38 8, 42 7 C39 11, 35 15, 33 20 Z" fill="#15803D"/>
+  
+  <!-- Leaves / Calyx -->
+  <path d="M32 19 C26 15, 19 16, 16 19 C21 21, 26 21, 32 20 C38 21, 43 21, 48 19 C45 16, 38 15, 32 19 Z" fill="url(#leafGrad)"/>
+  <path d="M32 20 C31 24, 28 26, 25 27 C28 24, 30 22, 32 20 Z" fill="#16A34A"/>
+  <path d="M32 20 C33 24, 36 26, 39 27 C36 24, 34 22, 32 20 Z" fill="#16A34A"/>
+  
+  <!-- Distinct Bold 'N' Brand Mark -->
+  <text x="32.5" y="43" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="22" font-weight="900" fill="#ffffff" text-anchor="middle" dominant-baseline="central" style="letter-spacing: -0.5px;">N</text>
+</svg>
