@@ -7,11 +7,9 @@ import MenuItem from "./models/MenuItems";
 
 dotenv.config();
 
-const MONGO_URI =
-  process.env.MONGO_URI ||
-  """";
-const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret_key";
-const GEMINI_API_KEY = """";
+const MONGO_URI = process.env.MONGO_URI || "";
+const JWT_SECRET = process.env.JWT_SECRET || "default_jwt_secret";
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
 
 async function runComprehensiveTests() {
   console.log("=================================================");
