@@ -57,7 +57,7 @@ export const AppProvider = ({ children }: AppProviderProps) => {
         return;
       }
 
-      if (token.startsWith("demo_token_")) {
+      if (token.startsWith("demo_token_") || token.startsWith("google_token_")) {
         const demoUserStr = localStorage.getItem("demo_user");
         if (demoUserStr) {
           try {

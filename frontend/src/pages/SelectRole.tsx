@@ -95,11 +95,18 @@ const SelectRole = () => {
       console.warn("Backend update failed, applying role locally:", err);
 
       // Resilient local update for demo/preview
-      if (user) {
-        const updatedUser = { ...user, role };
-        setUser(updatedUser);
-        localStorage.setItem("demo_user", JSON.stringify(updatedUser));
-      }
+      const currentUser =
+        user ||
+        (localStorage.getItem("demo_user")
+          ? JSON.parse(localStorage.getItem("demo_user")!)
+          : null) || {
+          _id: `user_${Date.now()}`,
+          name: "Nomato User",
+          email: "user@nomato.com",
+        };
+      const updatedUser = { ...currentUser, role };
+      setUser(updatedUser);
+      localStorage.setItem("demo_user", JSON.stringify(updatedUser));
 
       toast.success(`Role set to ${role.toUpperCase()}`);
 

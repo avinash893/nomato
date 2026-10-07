@@ -85,22 +85,74 @@ const ChatBot: React.FC = () => {
       // 2. Intelligent Culinary & Nomato Concierge responder (works 100% offline & on Vercel)
       const getSmartResponse = (query: string): string => {
         const q = query.toLowerCase();
-        if (q.includes("dinner") || q.includes("popular") || q.includes("recommend") || q.includes("dish")) {
-          return "Here are our chef's top dinner recommendations for tonight:\n\n1. **Royal Dum Biryani** - Fragrant basmati rice slow-cooked with saffron, caramelized onions, and tender spices.\n2. **Paneer Tikka Makhani / Butter Chicken** with Garlic Butter Naan - Rich, creamy tomato-velvet gravy.\n3. **Artisanal Wood-Fired Margherita Pizza** - Sourdough crust topped with San Marzano tomatoes, fresh mozzarella, and basil.\n\nWould you like recommendations for a specific cuisine (e.g. North Indian, Italian, Chinese)?";
+
+        // Greetings
+        if (q === "hi" || q === "hello" || q === "hey" || q.startsWith("hi ") || q.startsWith("hello ")) {
+          return "Hello! 👋 I'm **Nomato AI**, your personal food & dining concierge.\n\nI can help you with:\n• **Dinner & Lunch suggestions**\n• **Vegetarian & healthy picks**\n• **Live order tracking guidance**\n• **Special offers & coupons**\n\nWhat are you craving today?";
         }
-        if (q.includes("veg") || q.includes("vegetarian") || q.includes("vegan")) {
-          return "Here are top-rated vegetarian favorites on Nomato:\n\n1. **Dal Makhani & Jeera Rice** - Slow-simmered black lentils with churned butter.\n2. **Crispy Chilli Paneer** - Indo-Chinese street-style wok toss with bell peppers.\n3. **Mediterranean Falafel Bowl** - Herb falafels, hummus, tabbouleh, and warm pita.\n4. **Farmhouse Veggie Pizza** - Bell peppers, sweet corn, mushrooms, and olives.";
+
+        // Dinner / Popular recommendations
+        if (q.includes("dinner") || q.includes("popular") || q.includes("recommend") || q.includes("craving")) {
+          return "Here are our chef's top dinner recommendations tonight:\n\n1. **Royal Dum Biryani** - Fragrant basmati rice slow-cooked with saffron, caramelized onions, and tender spices.\n2. **Paneer Makhani / Butter Chicken** with Garlic Butter Naan - Rich, creamy tomato-velvet gravy.\n3. **Artisanal Wood-Fired Margherita Pizza** - Sourdough crust topped with San Marzano tomatoes, fresh mozzarella, and basil.\n\nWould you like recommendations for a specific cuisine?";
         }
-        if (q.includes("track") || q.includes("order") || q.includes("where is")) {
-          return "To track your delivery:\n\n1. Navigate to your **Orders** dashboard from the navigation bar.\n2. Tap **Track Order** to open the real-time Leaflet map view with live GPS coordinates.\n3. You'll also see estimated delivery time and rider contact information!";
+
+        // Biryani
+        if (q.includes("biryani") || q.includes("rice")) {
+          return "Here are the finest Biryanis available on Nomato:\n\n1. **Hyderabadi Dum Biryani** - Authentic spiced long-grain basmati with mint raita.\n2. **Lucknowi Awadhi Biryani** - Delicate, aromatic saffron rice with tender marinated pieces.\n3. **Kolkata Mutton Biryani** - Subtle spices served with golden potatoes and boiled egg.\n4. **Paneer & Veg Saffroni Biryani** - Rich vegetarian alternative slow-cooked in a sealed handi.";
         }
-        if (q.includes("register") || q.includes("restaurant") || q.includes("seller") || q.includes("partner")) {
-          return "To register your restaurant on Nomato:\n\n1. Sign in and select the **Restaurant Partner** role.\n2. Open your **Seller Portal** to set up your restaurant name, location, and cuisine tags.\n3. Add menu items with images, pricing, and dietary flags to start accepting orders immediately!";
+
+        // Pizza & Italian
+        if (q.includes("pizza") || q.includes("pasta") || q.includes("italian")) {
+          return "Top Italian & Pizza picks on Nomato:\n\n1. **Classic Margherita Pizza** - San Marzano tomatoes, fresh mozzarella, extra virgin olive oil, and basil.\n2. **Quattro Formaggi Pizza** - Gorgonzola, parmesan, provolone, and creamy mozzarella.\n3. **Penne Arrabbiata** - Al dente pasta tossed in spicy garlic tomato sauce.\n4. **Fettuccine Alfredo** - Rich parmesan cream sauce with grilled mushrooms.";
         }
-        if (q.includes("rider") || q.includes("deliver")) {
-          return "To deliver with Nomato:\n\n1. Log in and choose the **Rider Partner** role.\n2. Toggle your status to **Available** in the Rider Dashboard.\n3. Accept incoming orders, view pickup navigation, and mark orders delivered to earn payouts!";
+
+        // Chinese / Asian
+        if (q.includes("chinese") || q.includes("noodle") || q.includes("manchurian") || q.includes("dimsum") || q.includes("momos")) {
+          return "Cravings for Indo-Chinese & Asian delicacies:\n\n1. **Crispy Chilli Paneer / Chicken** - Tossed in fiery dark soy and green chillies.\n2. **Wok-Tossed Hakka Noodles** - Thin wheat noodles with crispy spring veggies.\n3. **Steamed Dim Sum / Momos** - Served with spicy Schezwan dipping sauce.\n4. **Hot & Sour Soup** - Pepper-spiced tangy broth with tofu and shredded veggies.";
         }
-        return `I'm **Nomato AI**, your food and dining concierge! I can help you discover delicious dishes, customize orders, or navigate your restaurant & delivery accounts. What cuisine or dish are you craving?`;
+
+        // Vegetarian
+        if (q.includes("veg") || q.includes("vegetarian") || q.includes("vegan") || q.includes("paneer")) {
+          return "Top-rated vegetarian favorites on Nomato:\n\n1. **Dal Makhani & Jeera Rice** - Slow-simmered black lentils with churned white butter.\n2. **Paneer Butter Masala** - Cottage cheese in rich, mildly sweet cashew-tomato gravy.\n3. **Mediterranean Falafel Mezze** - Herb falafels, roasted garlic hummus, and pita bread.\n4. **Farmhouse Veggie Pizza** - Bell peppers, sweet corn, mushrooms, and black olives.";
+        }
+
+        // Breakfast & Morning
+        if (q.includes("breakfast") || q.includes("morning") || q.includes("dosa") || q.includes("pancake")) {
+          return "Energizing breakfast favorites:\n\n1. **Masala Dosa with Sambar** - Golden crisp fermented rice crepe with spiced potato mash and coconut chutney.\n2. **Fluffy Buttermilk Pancakes** - Drizzled with warm maple syrup and wild berries.\n3. **Chole Bhature** - Spiced Punjabi chickpeas served with puffed golden fried bread.\n4. **Avocado Sourdough Toast** - Smashed avocado, cherry tomatoes, and microgreens.";
+        }
+
+        // Desserts & Sweets
+        if (q.includes("dessert") || q.includes("sweet") || q.includes("ice cream") || q.includes("cake") || q.includes("chocolate")) {
+          return "Sweet tooth delights:\n\n1. **Warm Gulab Jamun** with Rabri - Soft khoya dumplings soaked in cardamom saffron syrup.\n2. **Molten Belgian Chocolate Lava Cake** - Warm gooey chocolate center served with vanilla bean gelato.\n3. **Classic Italian Tiramisu** - Coffee-soaked ladyfingers with whipped mascarpone cream.\n4. **Nutella & Banana Waffles** - Crispy Belgian waffles with drizzled dark chocolate.";
+        }
+
+        // Offers / Discounts
+        if (q.includes("offer") || q.includes("discount") || q.includes("coupon") || q.includes("code") || q.includes("promo")) {
+          return "Exclusive Nomato Promo Codes today:\n\n• **NOMATO50** - Get 50% off up to ₹100 on your first order!\n• **FEAST20** - Flat 20% off on orders above ₹499.\n• **FREEDEL** - Free delivery on orders above ₹299.\n\nApply these in your Cart during checkout!";
+        }
+
+        // Tracking & Orders
+        if (q.includes("track") || q.includes("order") || q.includes("where is") || q.includes("status")) {
+          return "To track your delivery live:\n\n1. Navigate to your **Orders** page from the top navigation bar.\n2. Click **Track Order** on any active delivery.\n3. View real-time GPS tracking of your rider on the interactive Leaflet map, along with delivery estimates!";
+        }
+
+        // Restaurant Partner / Seller
+        if (q.includes("register") || q.includes("restaurant") || q.includes("seller") || q.includes("partner") || q.includes("menu")) {
+          return "To join Nomato as a Restaurant Partner:\n\n1. Sign in and select the **Restaurant Partner** role.\n2. Open your **Seller Portal** to customize your restaurant name, cuisine tags, and banner.\n3. Add menu items with images, pricing, and dietary flags to begin receiving live customer orders!";
+        }
+
+        // Rider Partner
+        if (q.includes("rider") || q.includes("deliver") || q.includes("job") || q.includes("earn")) {
+          return "To deliver with Nomato:\n\n1. Sign in and select the **Rider Partner** role.\n2. Toggle your status to **Available** on the Rider Dashboard.\n3. Accept nearby broadcasted delivery requests, follow the map route, and earn instant trip payouts!";
+        }
+
+        // Support & Contact
+        if (q.includes("support") || q.includes("contact") || q.includes("help") || q.includes("complaint") || q.includes("issue")) {
+          return "We are here 24/7 to help!\n\n• **Email Support**: support.wehear@gmail.com\n• **Live Helpdesk**: Visit the [Support Page](/support) for quick ticket resolution and FAQs.\n• **Phone Support**: Available in the order details during active deliveries.";
+        }
+
+        // Default friendly response
+        return `I'm **Nomato AI**, your dining concierge! I can help you discover dishes, find cuisine recommendations (Biryani, Italian, Chinese, Vegan, Desserts), track live deliveries, or give you promo codes. What are you in the mood for?`;
       };
 
       const smartReply = getSmartResponse(text);
