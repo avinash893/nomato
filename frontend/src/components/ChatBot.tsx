@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
-import { utilsService } from "../config";
+import { utilsService, geminiApiKey } from "../config";
 import {
   BsChatDotsFill,
   BsX,
@@ -63,7 +63,111 @@ const ChatBot: React.FC = () => {
     setLoading(true);
 
     try {
-      // 1. Try backend utils service if reachable
+      const q = text.toLowerCase();
+
+      // 1. Direct App Feature Shortcuts (Coupons, Live Tracking, Partner Onboarding)
+      const isFeatureShortcut =
+        q.includes("coupon") ||
+        q.includes("promo") ||
+        q.includes("discount") ||
+        q.includes("code") ||
+        q.includes("track") ||
+        q.includes("where is my order") ||
+        q.includes("partner") ||
+        q.includes("register restaurant") ||
+        q.includes("become a rider");
+
+      if (isFeatureShortcut) {
+        if (q.includes("coupon") || q.includes("promo") || q.includes("discount") || q.includes("code")) {
+          setMessages((prev) => [
+            ...prev,
+            {
+              role: "assistant",
+              content:
+                "Exclusive Nomato Promo Codes today: 🏷️\n\n• **NOMATO50** - Get 50% off up to ₹100 on your first order!\n• **FEAST20** - Flat 20% off on orders above ₹499.\n• **FREEDEL** - Free delivery on orders above ₹299.\n\nApply these in your Cart during checkout!",
+            },
+          ]);
+          return;
+        }
+
+        if (q.includes("track") || q.includes("where is")) {
+          setMessages((prev) => [
+            ...prev,
+            {
+              role: "assistant",
+              content:
+                "To track your delivery live: 📍\n\n1. Navigate to your **Orders** page from the top navigation bar.\n2. Click **Track Order** on any active delivery.\n3. View real-time GPS tracking of your rider on the interactive Leaflet map, along with delivery estimates!",
+            },
+          ]);
+          return;
+        }
+
+        if (q.includes("partner") || q.includes("register") || q.includes("seller")) {
+          setMessages((prev) => [
+            ...prev,
+            {
+              role: "assistant",
+              content:
+                "To join Nomato as a Restaurant Partner: 🏪\n\n1. Sign in and select the **Restaurant Partner** role.\n2. Open your **Seller Portal** to customize your restaurant name, cuisine tags, and banner.\n3. Add menu items with images, pricing, and dietary flags to begin receiving live customer orders!",
+            },
+          ]);
+          return;
+        }
+
+        if (q.includes("rider")) {
+          setMessages((prev) => [
+            ...prev,
+            {
+              role: "assistant",
+              content:
+                "To deliver with Nomato: 🛵\n\n1. Sign in and select the **Rider Partner** role.\n2. Toggle your status to **Available** on the Rider Dashboard.\n3. Accept nearby broadcasted delivery requests, follow the map route, and earn instant trip payouts!",
+            },
+          ]);
+          return;
+        }
+      }
+
+      // 2. Direct Google Gemini AI Execution with user's Gemini API Key
+      if (geminiApiKey) {
+        try {
+          const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${geminiApiKey}`;
+          const historySlice = messages.slice(-4).map((m) => ({
+            role: m.role === "assistant" ? "model" : "user",
+            parts: [{ text: m.content }],
+          }));
+
+          const geminiPayload = {
+            contents: [
+              ...historySlice,
+              {
+                role: "user",
+                parts: [{ text }],
+              },
+            ],
+            systemInstruction: {
+              parts: [
+                {
+                  text:
+                    "You are Nomato AI, a brilliant, warm, and helpful culinary concierge for the Nomato food delivery app (similar to Zomato/Swiggy).\n" +
+                    "When the user asks questions, give appetizing food ideas, lunch/dinner suggestions, dietary advice (veg, non-veg, keto, healthy), and actionable solutions.\n" +
+                    "Use bold formatting for **dish names**, cheerful food emojis (🍕, 🍛, 🍜, 🥗, 🍰), and practical bullet points. If their request is open-ended, suggest 3-4 top choices and ask a helpful follow-up question.",
+                },
+              ],
+            },
+          };
+
+          const geminiRes = await axios.post(geminiUrl, geminiPayload, { timeout: 8000 });
+          const geminiReply = geminiRes.data?.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (geminiReply && geminiReply.trim().length > 0) {
+            setMessages((prev) => [...prev, { role: "assistant", content: geminiReply.trim() }]);
+            return;
+          }
+        } catch (geminiErr) {
+          console.warn("Direct Gemini API failed, trying backup resolvers:", geminiErr);
+        }
+      }
+
+      // 3. Backend Utils Service fallback
       try {
         const response = await axios.post(
           `${utilsService}/api/chat`,
@@ -79,20 +183,20 @@ const ChatBot: React.FC = () => {
           return;
         }
       } catch (backendErr) {
-        console.warn("Backend chat unavailable, trying public AI endpoint:", backendErr);
+        console.warn("Backend chat unavailable:", backendErr);
       }
 
-      // 2. Try direct AI Generation (works on Vercel / GitHub Pages via HTTPS)
+      // 4. Secondary Public AI fallback
       try {
-        const systemPrompt = "You are Nomato AI, a friendly, witty, and passionate culinary concierge for the Nomato food delivery app. Recommend delicious dishes, cuisines, meal ideas for lunch, dinner, breakfast, coupons (NOMATO50, FEAST20), or help with orders. Keep responses engaging, appetizing, formatted with bold food names and food emojis.";
+        const systemPrompt = "You are Nomato AI, a friendly food concierge. Recommend delicious dishes, meals, and solutions with bold formatting and food emojis.";
         const aiUrl = `https://text.pollinations.ai/${encodeURIComponent(text)}?system=${encodeURIComponent(systemPrompt)}&model=openai`;
-        const aiRes = await axios.get(aiUrl, { timeout: 6000 });
+        const aiRes = await axios.get(aiUrl, { timeout: 5000 });
         if (aiRes.data && typeof aiRes.data === "string" && aiRes.data.trim().length > 10) {
           setMessages((prev) => [...prev, { role: "assistant", content: aiRes.data.trim() }]);
           return;
         }
       } catch (aiErr) {
-        console.warn("Direct AI endpoint unavailable, using comprehensive local culinary engine:", aiErr);
+        console.warn("Secondary AI endpoint unavailable, using local culinary engine:", aiErr);
       }
 
       // 3. Comprehensive Local Culinary & Nomato Concierge Engine
