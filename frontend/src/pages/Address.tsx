@@ -18,8 +18,6 @@ import {
   BiTrash,
   BiMapPin,
   BiPhone,
-  BiHomeAlt,
-  BiBriefcase,
 } from "react-icons/bi";
 import type { IAddress } from "../types";
 
@@ -97,7 +95,7 @@ const AddressPage: React.FC = () => {
 
   const [mobile, setMobile] = useState("");
   const [formattedAddress, setFormattedAddress] = useState("");
-  const [label, setLabel] = useState("Home");
+  const label = "Delivery Address";
   const [latitude, setLatitude] = useState<number | null>(null);
   const [longitude, setLongitude] = useState<number | null>(null);
 
@@ -302,37 +300,6 @@ const AddressPage: React.FC = () => {
               </div>
             )}
 
-            {/* Label Chips */}
-            <div>
-              <label className="block text-xs font-semibold text-gray-700 uppercase mb-2">
-                Save Address As
-              </label>
-              <div className="flex gap-2">
-                {[
-                  { key: "Home", icon: BiHomeAlt },
-                  { key: "Work", icon: BiBriefcase },
-                  { key: "Other", icon: BiMapPin },
-                ].map((item) => {
-                  const Icon = item.icon;
-                  const isSelected = label === item.key;
-                  return (
-                    <button
-                      key={item.key}
-                      type="button"
-                      onClick={() => setLabel(item.key)}
-                      className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
-                        isSelected
-                          ? "bg-red-600 text-white shadow-sm shadow-red-100"
-                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                      }`}
-                    >
-                      <Icon size={15} />
-                      <span>{item.key}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
 
             {/* Mobile number */}
             <div>
