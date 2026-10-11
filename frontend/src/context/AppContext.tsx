@@ -36,7 +36,9 @@ export const AppProvider = ({ children }: AppProviderProps) => {
 
   const [location, setLocation] = useState<LocationData | null>(null);
   const [loadingLocation, setLoadingLocation] = useState(false);
-  const [city, setCity] = useState("Fetching location...");
+  const [city, setCity] = useState(
+    () => localStorage.getItem("cached_city") || "New Delhi"
+  );
 
   const [cart, setCart] = useState<ICartItem[] | null>([]);
   const [subTotal, setSubTotal] = useState(0);
@@ -194,6 +196,7 @@ export const AppProvider = ({ children }: AppProviderProps) => {
                 cleanAddress.split(",")[0] ||
                 "Detected Location";
 
+              localStorage.setItem("cached_city", cleanCity);
               setCity(cleanCity);
 
               const locData: LocationData = {
@@ -240,6 +243,7 @@ export const AppProvider = ({ children }: AppProviderProps) => {
               sanitizeEnglish(bdcData.city || bdcData.locality) ||
               "Detected Location";
 
+            localStorage.setItem("cached_city", shortCity);
             setCity(shortCity);
 
             const locData: LocationData = {
@@ -286,9 +290,9 @@ export const AppProvider = ({ children }: AppProviderProps) => {
           resolve(defaultLoc);
         },
         {
-          enableHighAccuracy: true,
-          timeout: 20000,
-          maximumAge: 0,
+          enableHighAccuracy: false,
+          timeout: 8000,
+          maximumAge: 30000,
         }
       );
     });

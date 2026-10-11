@@ -3,14 +3,37 @@ import { useAppData } from "../context/AppContext";
 import { useEffect, useState } from "react";
 import { CgShoppingCart } from "react-icons/cg";
 import { BiMapPin, BiSearch, BiUser, BiReceipt } from "react-icons/bi";
+import toast from "react-hot-toast";
 
 const Navbar = () => {
-  const { isAuth, user, city, location, quauntity } = useAppData();
+  const {
+    isAuth,
+    user,
+    city,
+    quauntity,
+    fetchLocation,
+    loadingLocation,
+  } = useAppData();
   const currentLocation = useLocation();
   const isHomePage = currentLocation.pathname === "/";
 
   const [searchParam, setSearchParam] = useSearchParams();
   const [search, setSearch] = useState(searchParam.get("search") || "");
+
+  const handleDetectLocation = async () => {
+    toast.loading("Detecting your live location via GPS...", { id: "gps" });
+    const loc = await fetchLocation();
+    if (loc) {
+      toast.success(`📍 Delivered to: ${loc.city || loc.formattedAddress}`, {
+        id: "gps",
+      });
+    } else {
+      toast.error(
+        "Could not access GPS. Please allow location permissions in your browser.",
+        { id: "gps" }
+      );
+    }
+  };
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -28,31 +51,42 @@ const Navbar = () => {
     <nav className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
       <div className="max-w-7xl mx-auto h-16 px-4 sm:px-6 flex items-center justify-between gap-4">
         {/* Left Section: Brand & Location */}
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-4 sm:gap-6">
           <Link
             to="/"
-            className="text-2xl font-black tracking-tight text-red-600 hover:text-red-700 transition flex items-center gap-1.5"
+            className="text-2xl font-black tracking-tight text-red-600 hover:text-red-700 transition flex items-center gap-1.5 shrink-0"
           >
             <span>🍅</span>
             <span>Nomato</span>
           </Link>
 
           {isHomePage && (
-            <Link
-              to="/address"
-              className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gray-50 hover:bg-gray-100 border border-gray-100 transition max-w-[280px]"
-              title={location?.formattedAddress || city}
+            <button
+              type="button"
+              onClick={handleDetectLocation}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gray-50 hover:bg-gray-100 active:scale-[0.98] border border-gray-100 transition max-w-[180px] sm:max-w-[280px] cursor-pointer text-left"
+              title="Click to detect your live location via GPS"
             >
-              <BiMapPin className="text-red-500 shrink-0" size={16} />
-              <div className="flex flex-col text-left">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
-                  Deliver To
+              <BiMapPin
+                className={`text-red-500 shrink-0 ${
+                  loadingLocation ? "animate-bounce" : ""
+                }`}
+                size={16}
+              />
+              <div className="flex flex-col text-left overflow-hidden">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 flex items-center gap-1">
+                  <span>Deliver To</span>
+                  {loadingLocation && (
+                    <span className="text-red-500 font-extrabold animate-pulse text-[9px]">
+                      • GPS
+                    </span>
+                  )}
                 </span>
                 <span className="text-xs font-semibold text-gray-800 truncate">
-                  {city || "Set delivery location"}
+                  {loadingLocation ? "Detecting location..." : city || "Detect Live Location"}
                 </span>
               </div>
-            </Link>
+            </button>
           )}
         </div>
 
