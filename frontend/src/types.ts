@@ -36,6 +36,9 @@ export interface IRestaurant {
   };
   distanceKm?: number;
   distance?: number;
+  isVeg?: boolean;
+  foodType?: "veg" | "non-veg" | "both";
+  makingTime?: number;
   createdAt: string | Date;
   updatedAt?: string | Date;
 }

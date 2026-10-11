@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { BiMapPin } from "react-icons/bi";
+import { BiMapPin, BiTimeFive } from "react-icons/bi";
 
 interface RestaurantCardProps {
   id: string;
@@ -9,6 +9,9 @@ interface RestaurantCardProps {
   distance: string | number;
   isOpen: boolean;
   description?: string;
+  isVeg?: boolean;
+  foodType?: "veg" | "non-veg" | "both";
+  makingTime?: number;
 }
 
 const RestaurantCard: React.FC<RestaurantCardProps> = ({
@@ -18,8 +21,14 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({
   distance,
   isOpen,
   description,
+  isVeg,
+  foodType,
+  makingTime = 25,
 }) => {
   const navigate = useNavigate();
+
+  const isPureVeg = isVeg === true || foodType === "veg";
+  const isNonVeg = foodType === "non-veg";
 
   return (
     <div
@@ -36,25 +45,48 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({
               !isOpen ? "grayscale brightness-75" : ""
             }`}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30 opacity-70 group-hover:opacity-50 transition-opacity" />
 
-          {/* Status Badge */}
-          <div className="absolute top-3 left-3">
+          {/* Top Status & Dietary Badges */}
+          <div className="absolute top-3 left-3 flex items-center gap-1.5">
             <span
-              className={`px-3 py-1 rounded-full text-[11px] font-bold tracking-wide uppercase shadow-sm backdrop-blur-md ${
+              className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold tracking-wide uppercase shadow-sm backdrop-blur-md ${
                 isOpen
                   ? "bg-emerald-500/90 text-white"
                   : "bg-rose-500/90 text-white"
               }`}
             >
-              {isOpen ? "Open Now" : "Closed"}
+              {isOpen ? "Open" : "Closed"}
             </span>
+
+            {isPureVeg && (
+              <span className="px-2.5 py-1 rounded-full text-[10px] font-extrabold tracking-wide uppercase shadow-sm bg-emerald-600/95 text-white backdrop-blur-md flex items-center gap-1">
+                <span>🌱</span> Pure Veg
+              </span>
+            )}
+            {isNonVeg && (
+              <span className="px-2.5 py-1 rounded-full text-[10px] font-extrabold tracking-wide uppercase shadow-sm bg-rose-600/95 text-white backdrop-blur-md flex items-center gap-1">
+                <span>🍗</span> Non-Veg
+              </span>
+            )}
+            {!isPureVeg && !isNonVeg && foodType === "both" && (
+              <span className="px-2.5 py-1 rounded-full text-[10px] font-extrabold tracking-wide uppercase shadow-sm bg-amber-600/95 text-white backdrop-blur-md flex items-center gap-1">
+                <span>🌱🍗</span> Veg & Non-Veg
+              </span>
+            )}
           </div>
 
-          {/* Distance Badge */}
-          <div className="absolute bottom-3 right-3 flex items-center gap-1 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-xl text-white text-xs font-semibold">
-            <BiMapPin size={13} className="text-red-400" />
-            <span>{distance} km</span>
+          {/* Bottom Badges: Making Time & Distance */}
+          <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
+            <div className="flex items-center gap-1 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-xl text-white text-xs font-semibold">
+              <BiTimeFive size={13} className="text-amber-300" />
+              <span>{makingTime} min prep</span>
+            </div>
+
+            <div className="flex items-center gap-1 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-xl text-white text-xs font-semibold">
+              <BiMapPin size={13} className="text-red-400" />
+              <span>{distance} km</span>
+            </div>
           </div>
         </div>
 
@@ -72,7 +104,10 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({
       </div>
 
       <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-400">
-        <span className="font-medium text-gray-500">Fast Delivery</span>
+        <span className="font-medium text-gray-500 flex items-center gap-1">
+          <BiTimeFive size={14} className="text-gray-400" />
+          <span>Prep time: {makingTime}m</span>
+        </span>
         <span className="text-red-500 font-semibold group-hover:translate-x-0.5 transition-transform">
           View Menu →
         </span>
