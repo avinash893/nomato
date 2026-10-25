@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
+import toast from "react-hot-toast";
 import { utilsService, geminiApiKey } from "../config";
 import {
   BsChatDotsFill,
@@ -64,6 +65,11 @@ const ChatBot: React.FC = () => {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const lastSendTimeRef = useRef<number>(0);
+  const sendCountRef = useRef<{ count: number; windowStart: number }>({
+    count: 0,
+    windowStart: Date.now(),
+  });
 
   // Auto-scroll to bottom of chat
   useEffect(() => {
@@ -82,6 +88,25 @@ const ChatBot: React.FC = () => {
   const handleSend = async (textToSend?: string) => {
     const text = (textToSend || input).trim();
     if (!text || loading) return;
+
+    const now = Date.now();
+    // Rate limit: prevent rapid bursts (< 1.2s between queries)
+    if (now - lastSendTimeRef.current < 1200) {
+      toast.error("Please slow down! Sending messages too quickly.", { id: "rate-limit" });
+      return;
+    }
+
+    // Rate limit: maximum 15 queries per minute
+    if (now - sendCountRef.current.windowStart > 60000) {
+      sendCountRef.current = { count: 1, windowStart: now };
+    } else {
+      sendCountRef.current.count += 1;
+      if (sendCountRef.current.count > 15) {
+        toast.error("Rate limit reached. Please wait a minute before sending more queries.", { id: "rate-limit" });
+        return;
+      }
+    }
+    lastSendTimeRef.current = now;
 
     const userMessage: Message = { role: "user", content: text };
     const updatedMessages = [...messages, userMessage];

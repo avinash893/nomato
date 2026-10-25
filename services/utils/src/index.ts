@@ -2,10 +2,11 @@ import express from "express";
 import dotenv from "dotenv";
 import cloudinary from "cloudinary";
 import cors from "cors";
-import uploadRouter from "./routes/cloudinarry";
-import geocodeRouter from "./routes/geocode";
-import paymentRouter from "./routes/payment";
-import chatRouter from "./routes/chat";
+import uploadRouter from "./routes/cloudinarry.js";
+import geocodeRouter from "./routes/geocode.js";
+import paymentRouter from "./routes/payment.js";
+import chatRouter from "./routes/chat.js";
+import { generalRateLimiter } from "./middleware/rateLimiter.js";
 
 dotenv.config();
 
@@ -14,6 +15,9 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
+
+// Apply Redis-backed general rate limiter across all endpoints
+app.use(generalRateLimiter);
 
 const { CLOUD_NAME, CLOUD_API_KEY, CLOUD_SECRET_KEY } = process.env;
 

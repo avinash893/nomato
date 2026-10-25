@@ -1,24 +1,36 @@
 import express from "express";
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
+import { chatRateLimiter } from "../middleware/rateLimiter.js";
 
 dotenv.config();
 
 const router = express.Router();
 
-const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY,
-});
-
-const SYSTEM_INSTRUCTION = `You are "Nomato AI", a friendly, enthusiastic, and knowledgeable food guide and assistant for Nomato (a premium food delivery and dining app like Zomato).
+const SYSTEM_INSTRUCTION = `You are "Nomato AI", a friendly, enthusiastic, and knowledgeable culinary concierge for Nomato (India's premier food delivery app, like Zomato/Swiggy).
 
 Your responsibilities:
 1. Food & Restaurant Recommendations: Suggest appetizing dishes, popular cuisines (Indian, Chinese, Italian, Mexican, street food, etc.), meal ideas for different occasions (party, quick lunch, romantic dinner, late night craving), and dietary options (Pure Veg, Vegan, Keto, High-protein, Jain).
-2. Nomato App Assistance: Answer user questions about ordering food, tracking live orders, refund policies, applying coupons/discounts, and guide restaurant partners on how to register and list their menus.
+2. Nomato App Assistance: Answer user questions about ordering food, tracking live orders, refund policies, applying coupons/discounts (NOMATO50, FEAST20, FREEDEL), and guide restaurant partners on how to register and list their menus.
 3. Tone: Cheerful, polite, appetizing, and helpful. Use relevant food emojis (🍕, 🍛, 🍜, 🥗, 🍰) and clean bullet points for readability.
 4. Boundaries: If a user asks about topics completely unrelated to food, restaurants, or the Nomato platform, warmly steer the conversation back to food and dining.`;
 
-router.post("/", async (req, res) => {
+// Retrieve API key directly from system environment variables
+const getGeminiApiKey = (): string => {
+  return (
+    process.env.GEMINI_API_KEY ||
+    process.env.VITE_GEMINI_API_KEY ||
+    ""
+  );
+};
+
+const CANDIDATE_MODELS = [
+  "gemini-3.5-flash-lite",
+  "gemini-3.5-flash",
+  "gemini-flash-latest",
+];
+
+router.post("/", chatRateLimiter, async (req, res) => {
   try {
     const { message, history } = req.body;
 
@@ -26,15 +38,32 @@ router.post("/", async (req, res) => {
       return res.status(400).json({ error: "Message is required" });
     }
 
-    // Build multi-turn contents if chat history is provided
+    const apiKey = getGeminiApiKey();
+    if (!apiKey) {
+      return res.status(500).json({
+        error: "GEMINI_API_KEY is not configured in the system environment.",
+      });
+    }
+
+    const ai = new GoogleGenAI({ apiKey });
+
+    // Build multi-turn contents compliant with Gemini alternating user/model specification
     let contents: any = [];
 
     if (Array.isArray(history) && history.length > 0) {
-      // Map user & assistant messages to Gemini's expected role format
-      contents = history.map((msg: { role: string; content: string }) => ({
-        role: msg.role === "assistant" ? "model" : "user",
-        parts: [{ text: msg.content }],
-      }));
+      for (const msg of history) {
+        const role = msg.role === "assistant" ? "model" : "user";
+        if (contents.length === 0 && role === "model") continue;
+        if (contents.length > 0 && contents[contents.length - 1].role === role) continue;
+        contents.push({
+          role,
+          parts: [{ text: msg.content }],
+        });
+      }
+
+      if (contents.length > 0 && contents[contents.length - 1].role === "user") {
+        contents.pop();
+      }
     }
 
     // Add current user message
@@ -43,19 +72,28 @@ router.post("/", async (req, res) => {
       parts: [{ text: message }],
     });
 
-    const response = await ai.models.generateContent({
-      model: "gemini-3.5-flash-lite",
-      contents,
-      config: {
-        systemInstruction: SYSTEM_INSTRUCTION,
-      },
-    });
+    let lastError: any = null;
 
-    const reply =
-      response.text ||
-      "Sorry, I couldn't cook up a response right now. Please try again!";
+    for (const model of CANDIDATE_MODELS) {
+      try {
+        const response = await ai.models.generateContent({
+          model,
+          contents,
+          config: {
+            systemInstruction: SYSTEM_INSTRUCTION,
+          },
+        });
 
-    res.json({ reply });
+        if (response?.text) {
+          return res.json({ reply: response.text });
+        }
+      } catch (err: any) {
+        lastError = err;
+        console.warn(`[Gemini Route] Model ${model} failed, trying next:`, err.message);
+      }
+    }
+
+    throw lastError || new Error("All candidate Gemini models failed to generate a response");
   } catch (error: any) {
     console.error("Gemini Chat Error:", error);
     res.status(500).json({
