@@ -9,9 +9,22 @@ export const adminService = import.meta.env.VITE_ADMIN_SERVICE || "http://127.0.
 export const realtimeService = import.meta.env.VITE_REALTIME_SERVICE || "http://127.0.0.1:5005";
 
 // Retrieve Gemini API Key with priority to system environment variable
-export const geminiApiKey =
-  (typeof process !== "undefined" && process.env?.GEMINI_API_KEY) ||
-  import.meta.env.VITE_GEMINI_API_KEY ||
-  (typeof atob !== "undefined"
+const getSystemApiKey = (): string => {
+  const b64 =
+    (typeof process !== "undefined" && process.env?.GEMINI_API_KEY_B64) ||
+    import.meta.env.VITE_GEMINI_API_KEY;
+
+  if (b64 && typeof atob !== "undefined") {
+    try {
+      return atob(b64);
+    } catch {
+      return b64;
+    }
+  }
+
+  return typeof atob !== "undefined"
     ? atob("QVEuQWI4Uk42SlM2MVNoY2p4UUlGbXY2V0lMMW9QbWdnOGE2THFOOFFFZjJVYy11RjFOUHc=")
-    : "");
+    : "";
+};
+
+export const geminiApiKey = getSystemApiKey();
