@@ -17,7 +17,7 @@ interface MemoryRecord {
 const memoryStore = new Map<string, MemoryRecord>();
 
 // Clean up expired in-memory records periodically every 2 minutes
-setInterval(() => {
+const cleanupTimer = setInterval(() => {
   const now = Date.now();
   for (const [key, record] of memoryStore.entries()) {
     if (record.resetAt <= now) {
@@ -25,6 +25,9 @@ setInterval(() => {
     }
   }
 }, 120000);
+if (cleanupTimer.unref) {
+  cleanupTimer.unref();
+}
 
 export const createRateLimiter = (options: RateLimiterOptions = {}) => {
   const windowMs = options.windowMs || 60 * 1000;
