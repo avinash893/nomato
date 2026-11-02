@@ -35,11 +35,18 @@ export const createRateLimiter = (options: RateLimiterOptions = {}) => {
     options.message || "Too many authentication requests. Please try again after a moment.";
 
   return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const cfIp = req.headers["cf-connecting-ip"];
     const forwarded = req.headers["x-forwarded-for"];
     const ip =
+      (typeof cfIp === "string" ? cfIp.trim() : null) ||
       (typeof forwarded === "string" ? forwarded.split(",")[0]?.trim() : null) ||
       req.socket.remoteAddress ||
       "127.0.0.1";
+
+    const cfRay = req.headers["cf-ray"];
+    if (cfRay && typeof cfRay === "string") {
+      res.setHeader("X-Cloudflare-Ray", cfRay);
+    }
 
     const key = `ratelimit:${keyPrefix}:${ip}`;
 

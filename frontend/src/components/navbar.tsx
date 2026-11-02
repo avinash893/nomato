@@ -106,6 +106,12 @@ const Navbar = () => {
 
         {/* Right Section: Actions */}
         <div className="flex items-center gap-3 sm:gap-5">
+          {/* Cloudflare Edge Security Pill */}
+          <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-100 text-[10px] font-semibold text-emerald-800 tracking-tight">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span>Cloudflare Edge Verified</span>
+          </div>
+
           {/* Universal Cart Button */}
           <Link
             to="/cart"

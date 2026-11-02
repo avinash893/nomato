@@ -111,7 +111,14 @@ const Footer: React.FC = () => {
 
         {/* Bottom Bar */}
         <div className="border-t border-gray-800 mt-10 pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-gray-500 gap-4">
-          <p>© {new Date().getFullYear()} Nomato Inc. All rights reserved.</p>
+          <div className="flex flex-wrap items-center gap-2.5">
+            <p>© {new Date().getFullYear()} Nomato Inc. All rights reserved.</p>
+            <span className="hidden sm:inline-block w-1 h-1 rounded-full bg-gray-700"></span>
+            <span className="inline-flex items-center gap-1.5 text-gray-400">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              <span>Protected by Cloudflare Edge & TLS 1.3</span>
+            </span>
+          </div>
           <div className="flex gap-6">
             <Link to="/support" className="hover:text-gray-400 transition">
               Contact Us
