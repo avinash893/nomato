@@ -22,6 +22,8 @@ import RiderDashboard from "./pages/RiderDashboard";
 import Admin from "./pages/Admin";
 import ChatBot from "./components/ChatBot";
 import Support from "./pages/Support";
+import About from "./pages/About";
+import Careers from "./pages/Careers";
 import Footer from "./components/Footer";
 
 const App = () => {
@@ -58,6 +60,8 @@ const App = () => {
               <Route path="/admin" element={<Admin />} />
               <Route path="/support" element={<Support />} />
               <Route path="/contact" element={<Support />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/careers" element={<Careers />} />
             </Routes>
           </div>
           <Footer />
@@ -89,6 +93,8 @@ const App = () => {
               <Route path="/admin" element={<Admin />} />
               <Route path="/support" element={<Support />} />
               <Route path="/contact" element={<Support />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/careers" element={<Careers />} />
             </Routes>
           </div>
           <Footer />
@@ -110,6 +116,8 @@ const App = () => {
             <Route path="/cart" element={<Cart />} />
             <Route path="/support" element={<Support />} />
             <Route path="/contact" element={<Support />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/careers" element={<Careers />} />
 
             <Route element={<PublicRoute />}>
               <Route path="/login" element={<Login />} />

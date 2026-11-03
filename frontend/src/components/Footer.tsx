@@ -25,9 +25,20 @@ const Footer: React.FC = () => {
           {/* Quick Links */}
           <div className="space-y-3">
             <h4 className="text-white font-semibold text-sm uppercase tracking-wider">
-              Quick Links
+              Company & Links
             </h4>
             <ul className="space-y-2 text-sm">
+              <li>
+                <Link to="/about" className="hover:text-red-400 transition">
+                  About Nomato
+                </Link>
+              </li>
+              <li>
+                <Link to="/careers" className="hover:text-red-400 transition flex items-center gap-1.5">
+                  <span>Careers</span>
+                  <span className="text-[10px] bg-red-600/20 text-red-400 px-1.5 py-0.5 rounded-full border border-red-500/30">We're Hiring</span>
+                </Link>
+              </li>
               <li>
                 <Link to="/" className="hover:text-red-400 transition">
                   Browse Restaurants
@@ -41,11 +52,6 @@ const Footer: React.FC = () => {
               <li>
                 <Link to="/account" className="hover:text-red-400 transition">
                   My Profile
-                </Link>
-              </li>
-              <li>
-                <Link to="/select-role" className="hover:text-red-400 transition">
-                  Switch Role (Partner / Rider)
                 </Link>
               </li>
             </ul>
@@ -119,15 +125,21 @@ const Footer: React.FC = () => {
               <span>Protected by Cloudflare Edge & TLS 1.3</span>
             </span>
           </div>
-          <div className="flex gap-6">
-            <Link to="/support" className="hover:text-gray-400 transition">
-              Contact Us
+          <div className="flex flex-wrap items-center gap-5">
+            <Link to="/about" className="hover:text-gray-400 transition">
+              About
+            </Link>
+            <Link to="/careers" className="hover:text-gray-400 transition">
+              Careers
             </Link>
             <Link to="/support" className="hover:text-gray-400 transition">
-              Privacy Policy
+              Support
             </Link>
             <Link to="/support" className="hover:text-gray-400 transition">
-              Terms of Service
+              Privacy
+            </Link>
+            <Link to="/support" className="hover:text-gray-400 transition">
+              Terms
             </Link>
           </div>
         </div>

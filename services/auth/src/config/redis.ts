@@ -9,7 +9,9 @@ let isConnected = false;
 const redisUrl = process.env.REDIS_URL;
 const redisHost = process.env.REDIS_HOST || "127.0.0.1";
 const redisPort = Number(process.env.REDIS_PORT) || 6379;
-const redisPassword = process.env.REDIS_PASSWORD || undefined;
+const redisPassword = process.env.REDIS_PASSWORD || process.env.REDIS_API_KEY || undefined;
+const isTls =
+  Boolean(redisUrl && (redisUrl.startsWith("rediss://") || redisUrl.includes("upstash.io") || redisUrl.includes("db.redis")));
 
 try {
   if (redisUrl) {
@@ -18,6 +20,7 @@ try {
       enableOfflineQueue: false,
       maxRetriesPerRequest: 1,
       connectTimeout: 3000,
+      tls: isTls ? { rejectUnauthorized: false } : undefined,
       retryStrategy(times: number) {
         if (times > 3) return null;
         return Math.min(times * 1000, 3000);
